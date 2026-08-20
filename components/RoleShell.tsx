@@ -87,7 +87,26 @@ function getInitials(name: string) {
     .map((w) => w[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2);
+    .slice(0, 2)
+}
+
+function getNavClasses(
+  isActive: boolean,
+  activeVariant: "primary" | "secondary" | "outline"
+) {
+  if (activeVariant === "primary") {
+    return isActive
+      ? "bg-primary text-primary-foreground"
+      : "text-ink-900/60 hover:bg-primary/5 transition-colors";
+  }
+  if (activeVariant === "secondary") {
+    return isActive
+      ? "bg-secondary text-secondary-foreground"
+      : "text-ink-900/60 hover:bg-secondary/5 transition-colors";
+  }
+  return isActive
+    ? "border-b-2 border-primary"
+    : "hover:text-ink-900 border-b-2 border-transparent transition-colors";
 }
 
 function NotificationPanel({
@@ -192,7 +211,7 @@ export function RoleShell({
           </div>
         </div>
 
-        <nav
+<nav
           className="mt-6 flex-1 space-y-0.5 px-3"
           aria-label="Primary navigation"
         >
@@ -202,10 +221,10 @@ export function RoleShell({
               href={href}
               onClick={() => mobile && setSidebarOpen(false)}
               aria-current={active(href) ? "page" : undefined}
-              className={`flex items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brass-500 ${
+              className={`flex items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 active(href)
-                  ? "bg-paper-50/15 text-paper-50"
-                  : "text-paper-50/55 hover:bg-paper-50/10 hover:text-paper-50"
+                  ? getNavClasses(true, "primary")
+                  : getNavClasses(false, "primary")
               }`}
             >
               <Icon size={18} strokeWidth={1.6} />
@@ -219,13 +238,13 @@ export function RoleShell({
             href="/profile"
             onClick={() => mobile && setSidebarOpen(false)}
             aria-current={active("/profile") ? "page" : undefined}
-            className={`flex items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brass-500 ${
+            className={`flex items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
               active("/profile")
-                ? "bg-paper-50/15 text-paper-50"
-                : "text-paper-50/55 hover:bg-paper-50/10 hover:text-paper-50"
+                ? getNavClasses(true, "primary")
+                : getNavClasses(false, "primary")
             }`}
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brass-500 text-[10px] font-semibold text-ink-900">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
               {getInitials("Ava Mitchell")}
             </div>
             <span className="truncate">My Profile</span>
@@ -236,10 +255,10 @@ export function RoleShell({
               href={href}
               onClick={() => mobile && setSidebarOpen(false)}
               aria-current={active(href) ? "page" : undefined}
-              className={`flex items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-brass-500 ${
+              className={`flex items-center gap-3 rounded px-3 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 active(href)
-                  ? "bg-paper-50/15 text-paper-50"
-                  : "text-paper-50/55 hover:bg-paper-50/10 hover:text-paper-50"
+                  ? getNavClasses(true, "secondary")
+                  : getNavClasses(false, "secondary")
               }`}
             >
               <Icon size={18} strokeWidth={1.6} />
@@ -355,8 +374,8 @@ export function RoleShell({
         </main>
       </div>
 
-      <nav
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-ink-900/10 bg-white/80 backdrop-blur-md md:hidden"
+<nav
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-input bg-white/80 backdrop-blur-md md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
         aria-label="Primary navigation"
       >
@@ -366,16 +385,16 @@ export function RoleShell({
               <Link
                 href={href}
                 aria-current={active(href) ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 px-1 py-2 transition-colors ${
+                className={`flex flex-col items-center gap-0.5 px-1 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   active(href)
-                    ? "text-primaryContainer"
-                    : "text-ink-900/40"
+                    ? getNavClasses(true, "primary")
+                    : getNavClasses(false, "primary")
                 }`}
               >
                 <Icon size={20} strokeWidth={active(href) ? 2 : 1.5} />
                 <span className="text-[10px] leading-none">{label}</span>
                 {active(href) && (
-                  <span className="mt-0.5 h-0.5 w-4 rounded-full bg-primaryContainer" />
+                  <span className="mt-0.5 h-0.5 w-4 rounded-full bg-primary" />
                 )}
               </Link>
             </li>

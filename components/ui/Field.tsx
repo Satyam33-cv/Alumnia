@@ -15,18 +15,18 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
   const inputId = id ?? reactId;
   const describedBy = [hint ? `${inputId}-hint` : null, error ? `${inputId}-err` : null].filter(Boolean).join(" ") || undefined;
   return (
-    <label htmlFor={inputId} className={`block text-sm font-medium ${dark ? "text-paper-50" : "text-ink-900"}`}>
+    <label htmlFor={inputId} className={`block text-sm font-medium ${dark ? "text-muted-foreground" : "text-foreground"}`}>
       <span>{label}</span>
       <input
         ref={ref}
         id={inputId}
         aria-invalid={error ? "true" : undefined}
         aria-describedby={describedBy}
-        className={`mt-2 w-full border-b bg-transparent px-0 py-3 outline-none transition-colors ${dark ? "border-paper-50/25 placeholder:text-paper-50/25" : "border-ink-900/20 placeholder:text-ink-900/25"} focus:border-brass-500 ${error ? "border-clay-500" : ""} ${className}`}
+        className={`w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm placeholder-muted-foreground focus:border-primary transition-colors ${dark ? "dark:border-muted" : ""} ${error ? "border-destructive" : ""} outline-none ${className}`}
         {...rest}
       />
-      {hint && !error ? <span id={`${inputId}-hint`} className="mt-2 block text-xs text-ink-900/50">{hint}</span> : null}
-      {error ? <span id={`${inputId}-err`} className="mt-2 block text-xs text-clay-500">{error}</span> : null}
+      {hint && !error ? <span id={`${inputId}-hint`} className="mt-1 block text-xs text-muted-foreground">{hint}</span> : null}
+      {error ? <span id={`${inputId}-err`} className="mt-1 block text-xs text-destructive">{error}</span> : null}
     </label>
   );
 });
