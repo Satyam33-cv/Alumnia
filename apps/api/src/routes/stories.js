@@ -1,0 +1,189 @@
+// apps/api/src/routes/stories.js
+// Success stories: submit, list, admin approval workflow
+const express = require('express');
+const router = express.Router();
+const prisma = require('../db');
+const { authenticate, requireRole } = require('../middleware/auth');
+const { notify } = require('../services/notify');
+const email = require('../services/email');
+
+// =================== POST /api/stories ===================
+// Alumni (or admin) submits a success story -> isApproved = false
+router.post('/', authenticate, requireRole('ALUMNI', 'ADMIN'), async (req, res) => {
+  try {
+    const { title, story, company, role, batchYear, imageUrl } = req.body;
+
+    if (!title || !story || !company || !role) {
+      return res.status(400).json({ error: 'title, story, company, role are required' });
+    }
+
+    const created = await prisma.successStory.create({
+      data: {
+        alumniId: req.user.id,
+        title, story, company, role,
+        batchYear: batchYear ? parseInt(batchYear) : null,
+        imageUrl,
+        isApproved: false,
+      },
+    });
+
+    res.status(201).json({ story: created });
+  } catch (err) {
+    console.error('POST /stories error:', err);
+    res.status(500).json({ error: 'Failed to submit story' });
+  }
+});
+
+// =================== GET /api/stories/pending ===================
+// Admin: queue of stories awaiting approval (must be before GET /:id)
+router.get('/pending', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const stories = await prisma.successStory.findMany({
+      where: { isApproved: false },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        alumni: { select: { id: true, name: true, currentCompany: true, jobTitle: true, avatarUrl: true } },
+      },
+    });
+    res.json({ stories });
+  } catch (err) {
+    console.error('GET /stories/pending error:', err);
+    res.status(500).json({ error: 'Failed to fetch pending stories' });
+  }
+});
+
+// =================== GET /api/stories ===================
+// Public list of approved stories (optionally featured only)
+router.get('/', async (req, res) => {
+  try {
+    const { featured } = req.query;
+    const where = { isApproved: true };
+    if (featured === 'true') where.isFeatured = true;
+
+    const [stories, total] = await Promise.all([
+      prisma.successStory.findMany({
+        where,
+        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        include: {
+          alumni: {
+            select: { id: true, name: true, currentCompany: true, jobTitle: true, avatarUrl: true, department: true },
+          },
+        },
+      }),
+      prisma.successStory.count({ where }),
+    ]);
+
+    res.json({ stories, count: total });
+  } catch (err) {
+    console.error('GET /stories error:', err);
+    res.status(500).json({ error: 'Failed to fetch stories' });
+  }
+});
+
+// =================== POST /api/stories/:id/approve ===================
+// Admin approves a story (optional: feature it)
+router.post('/:id/approve', authenticate, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const { isFeatured } = req.body;
+    const story = await prisma.successStory.findUnique({
+      where: { id: req.params.id },
+      include: { alumni: { select: { id: true, name: true } } },
+    });
+    if (!story) return res.status(404).json({ error: 'Story not found' });
+
+    const updated = await prisma.successStory.update({
+      where: { id: req.params.id },
+      data: { isApproved: true, approvedBy: req.user.id, isFeatured: isFeatured === true },
+    });
+
+    // Notify the alumni that their story was approved (in-app + email)
+    await notify({
+      userId: story.alumniId,
+      type: 'STORY_APPROVED',
+      title: '✨ Story Approved',
+      message: `Your story "${story.title}" is now live on the Spotlight Wall!`,
+      link: `/stories/${story.id}`,
+      sendEmail: true,
+      emailTemplate: {
+        fn: email.sendStoryApprovedEmail,
+        data: { storyTitle: story.title },
+      },
+    });
+
+    res.json({ story: updated });
+  } catch (err) {
+    console.error('POST /stories/:id/approve error:', err);
+    res.status(500).json({ error: 'Failed to approve story' });
+  }
+});
+
+// =================== GET /api/stories/:id ===================
+router.get('/:id', async (req, res) => {
+  try {
+    const story = await prisma.successStory.findUnique({
+      where: { id: req.params.id },
+      include: {
+        alumni: {
+          select: { id: true, name: true, currentCompany: true, jobTitle: true, avatarUrl: true, department: true, batchYear: true },
+        },
+      },
+    });
+    if (!story) return res.status(404).json({ error: 'Story not found' });
+
+    // Only approved stories (or the owner / admin) can be viewed
+    if (!story.isApproved && story.alumniId !== req.user?.id && req.user?.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Story is pending approval' });
+    }
+
+    res.json({ story });
+  } catch (err) {
+    console.error('GET /stories/:id error:', err);
+    res.status(500).json({ error: 'Failed to fetch story' });
+  }
+});
+
+// =================== PATCH /api/stories/:id ===================
+router.patch('/:id', authenticate, async (req, res) => {
+  try {
+    const story = await prisma.successStory.findUnique({ where: { id: req.params.id } });
+    if (!story) return res.status(404).json({ error: 'Story not found' });
+    if (story.alumniId !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized to edit this story' });
+    }
+
+    const allowed = ['title', 'story', 'company', 'role', 'batchYear', 'imageUrl'];
+    const data = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) data[key] = req.body[key];
+    }
+
+    // Editing resets approval (needs re-review)
+    data.isApproved = false;
+    data.approvedBy = null;
+
+    const updated = await prisma.successStory.update({ where: { id: req.params.id }, data });
+    res.json({ story: updated });
+  } catch (err) {
+    console.error('PATCH /stories/:id error:', err);
+    res.status(500).json({ error: 'Failed to update story' });
+  }
+});
+
+// =================== DELETE /api/stories/:id ===================
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const story = await prisma.successStory.findUnique({ where: { id: req.params.id } });
+    if (!story) return res.status(404).json({ error: 'Story not found' });
+    if (story.alumniId !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    await prisma.successStory.delete({ where: { id: req.params.id } });
+    res.json({ message: 'Story deleted' });
+  } catch (err) {
+    console.error('DELETE /stories/:id error:', err);
+    res.status(500).json({ error: 'Failed to delete story' });
+  }
+});
+
+module.exports = router;

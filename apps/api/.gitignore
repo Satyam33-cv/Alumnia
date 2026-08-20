@@ -1,0 +1,2 @@
+# User-uploaded files (local storage fallback when Cloudinary is not configured)
+uploads/

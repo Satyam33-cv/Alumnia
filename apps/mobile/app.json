@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Alumnia",
+    "slug": "alumnia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#4f46e5"
+    },
+    "android": {
+      "package": "com.alumnia.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#4f46e5"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.alumnia.app",
+      "supportsTablet": true
+    },
+    "extra": {
+      "apiUrl": "https://alumni-api.up.railway.app"
+    },
+    "newArchEnabled": false,
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}
