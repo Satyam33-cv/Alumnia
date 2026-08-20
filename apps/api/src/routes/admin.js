@@ -3,6 +3,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 const { parse } = require('csv-parse');
 const bcrypt = require('bcrypt');
 const prisma = require('../db');
@@ -10,6 +12,14 @@ const { authenticate, requireRole } = require('../middleware/auth');
 const email = require('../services/email');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+const csvImportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many import requests, please try again later' },
+});
 
 // Apply admin guard to all routes below
 router.use(authenticate, requireRole('ADMIN'));
@@ -86,7 +96,7 @@ router.get('/users', async (req, res) => {
     }
 
     const take = Math.min(Math.max(parseInt(limit) || 25, 1), 100);
-    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const pageNum = Math.min(Math.max(parseInt(page) || 1, 1), 1000);
     const skip = (pageNum - 1) * take;
 
     const [users, total] = await Promise.all([
@@ -132,7 +142,7 @@ router.patch('/users/:id/verify', async (req, res) => {
 
 // =================== POST /api/admin/import-csv ===================
 // Bulk import alumni from CSV (multipart 'file' field)
-router.post('/import-csv', upload.single('file'), async (req, res) => {
+router.post('/import-csv', csvImportLimiter, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded (field name: file)' });
     if (req.file.mimetype !== 'text/csv' && !req.file.originalname.endsWith('.csv')) {
@@ -144,9 +154,6 @@ router.post('/import-csv', upload.single('file'), async (req, res) => {
         (err, recs) => (err ? reject(err) : resolve(recs)));
     });
 
-    const tempPassword = process.env.CSV_TEMP_PASSWORD || 'Welcome@2026';
-    const passwordHash = await bcrypt.hash(tempPassword, 10);
-
     const imported = [];
     const skipped = [];
     const failed = [];
@@ -155,18 +162,22 @@ router.post('/import-csv', upload.single('file'), async (req, res) => {
     for (const row of records) {
       index += 1;
       const name = row.name || row.Name;
-      const email = (row.email || row.Email || '').toLowerCase().trim();
+      const emailAddress = (row.email || row.Email || '').toLowerCase().trim();
 
-      if (!name || !email) { failed.push({ row: index, reason: 'missing name/email' }); continue; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { failed.push({ row: index, email, reason: 'invalid email format' }); continue; }
+      if (!name || !emailAddress) { failed.push({ row: index, reason: 'missing name/email' }); continue; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress)) { failed.push({ row: index, email: emailAddress, reason: 'invalid email format' }); continue; }
 
-      const existing = await prisma.user.findUnique({ where: { email } });
-      if (existing) { skipped.push({ row: index, email, reason: 'email already registered' }); continue; }
+      const existing = await prisma.user.findUnique({ where: { email: emailAddress } });
+      if (existing) { skipped.push({ row: index, email: emailAddress, reason: 'email already registered' }); continue; }
+
+      // Unique per-user credential — no shared temp password
+      const tempPassword = crypto.randomBytes(12).toString('base64url');
+      const passwordHash = await bcrypt.hash(tempPassword, 10);
 
       await prisma.user.create({
         data: {
           name: String(name).trim(),
-          email,
+          email: emailAddress,
           passwordHash,
           role: 'ALUMNI',
           isVerified: false,
@@ -180,13 +191,13 @@ router.post('/import-csv', upload.single('file'), async (req, res) => {
           linkedinUrl: row.linkedinUrl || row.linkedin || null,
         },
       });
-      imported.push({ name: String(name).trim(), email });
+      imported.push({ name: String(name).trim(), email: emailAddress, tempPassword });
     }
 
-    // Send welcome emails to all newly created alumni
+    // Send welcome emails with each user's unique temporary credential
     if (imported.length > 0) {
       console.log(`📧 Sending ${imported.length} welcome email(s)`);
-      await Promise.all(imported.map((u) => email.sendWelcomeEmail({ to: u.email, name: u.name, tempPassword })));
+      await Promise.all(imported.map((u) => email.sendWelcomeEmail({ to: u.email, name: u.name, tempPassword: u.tempPassword })));
     }
 
     res.status(201).json({

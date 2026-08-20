@@ -1,12 +1,25 @@
 // apps/api/src/routes/events.js
 // Events: create, list, detail, RSVP workflow
 const express = require('express');
+const { Prisma } = require('@prisma/client');
 const router = express.Router();
 const prisma = require('../db');
 const { authenticate, optionalAuthenticate, requireRole } = require('../middleware/auth');
 const { notify } = require('../services/notify');
 
 const CREATOR_ROLES = ['ADMIN', 'ALUMNI', 'FACULTY'];
+const MAX_TX_RETRIES = 3;
+
+async function withRetry(fn, retries = MAX_TX_RETRIES) {
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err.code === 'P2034' && attempt < retries) continue;
+      throw err;
+    }
+  }
+}
 
 // =================== POST /api/events ===================
 // Admin / Alumni / Faculty can create an event
@@ -110,7 +123,7 @@ router.post('/:id/rsvp', authenticate, async (req, res) => {
 
     if (event.maxCapacity) {
       try {
-        const rsvp = await prisma.$transaction(async (tx) => {
+        const rsvp = await withRetry(() => prisma.$transaction(async (tx) => {
           const count = await tx.eventRSVP.count({ where: { eventId: event.id } });
           if (count >= event.maxCapacity) {
             throw new Error('EVENT_FULL');
@@ -119,7 +132,7 @@ router.post('/:id/rsvp', authenticate, async (req, res) => {
             data: { eventId: event.id, userId: req.user.id },
             include: { event: { select: { id: true, title: true, date: true } } },
           });
-        });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }));
 
         if (event.createdById !== req.user.id) {
           await notify({

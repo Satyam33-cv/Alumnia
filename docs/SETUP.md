@@ -124,9 +124,14 @@ Open a **new terminal**:
 
 ```powershell
 cd apps/web
-New-Item .env -Force; Set-Content .env "NEXT_PUBLIC_API_URL=http://localhost:4000"
+New-Item .env -Force; Set-Content .env "NEXT_PUBLIC_API_URL=http://localhost:4000/api"
 npm run dev        # → http://localhost:3000
 ```
+
+> Note: this repo's Next.js app lives at the **repo root**, and the API
+> endpoints are mounted under `/api` — so `NEXT_PUBLIC_API_URL` must end with
+> `/api` (e.g. `http://localhost:4000/api`). A bare `http://localhost:4000`
+> causes 404 "route not found" on register/login.
 
 Open http://localhost:3000 in your browser and log in with any demo account.
 

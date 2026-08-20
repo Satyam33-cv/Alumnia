@@ -1,11 +1,26 @@
 // apps/api/src/routes/referrals.js
 // Referral request workflow
 const express = require('express');
+const { Prisma } = require('@prisma/client');
 const router = express.Router();
 const prisma = require('../db');
 const { authenticate, requireRole } = require('../middleware/auth');
 const { notify } = require('../services/notify');
 const email = require('../services/email');
+
+const MAX_PAGE = 1000;
+const MAX_TX_RETRIES = 3;
+
+async function withRetry(fn, retries = MAX_TX_RETRIES) {
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err.code === 'P2034' && attempt < retries) continue;
+      throw err;
+    }
+  }
+}
 
 // =================== POST /api/referrals ===================
 // Student requests a referral for a job
@@ -30,7 +45,7 @@ router.post('/', authenticate, requireRole('STUDENT', 'ALUMNI'), async (req, res
     if (existing) return res.status(409).json({ error: 'You already requested a referral for this job' });
 
     // Check if referral slots are filled (atomic check within a transaction)
-    const referral = await prisma.$transaction(async (tx) => {
+    const referral = await withRetry(() => prisma.$transaction(async (tx) => {
       const acceptedCount = await tx.referralRequest.count({
         where: { jobId, status: { in: ['ACCEPTED', 'REFERRED', 'HIRED'] } },
       });
@@ -50,7 +65,7 @@ router.post('/', authenticate, requireRole('STUDENT', 'ALUMNI'), async (req, res
           referredBy: { select: { id: true, name: true, email: true } },
         },
       });
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }));
 
     // Notify the alumni (in-app + email + WhatsApp)
     await notify({
@@ -83,13 +98,13 @@ router.get('/me/sent', authenticate, async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
     const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const pageNum = Math.min(Math.max(parseInt(page) || 1, 1), MAX_PAGE);
     const skip = (pageNum - 1) * take;
 
     const [referrals, total] = await Promise.all([
       prisma.referralRequest.findMany({
         where: { requestedById: req.user.id },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip, take,
         include: {
           job: { select: { id: true, title: true, company: true, location: true } },
@@ -118,13 +133,13 @@ router.get('/me/received', authenticate, async (req, res) => {
     if (status) where.status = status;
 
     const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const pageNum = Math.min(Math.max(parseInt(page) || 1, 1), MAX_PAGE);
     const skip = (pageNum - 1) * take;
 
     const [referrals, total] = await Promise.all([
       prisma.referralRequest.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip, take,
         include: {
           job: { select: { id: true, title: true, company: true } },
@@ -251,14 +266,14 @@ router.get('/job/:jobId', authenticate, async (req, res) => {
 
     const { page = 1, limit = 20 } = req.query;
     const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const pageNum = Math.min(Math.max(parseInt(page) || 1, 1), MAX_PAGE);
     const skip = (pageNum - 1) * take;
 
     const where = { jobId: req.params.jobId };
     const [referrals, total] = await Promise.all([
       prisma.referralRequest.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip, take,
         include: { requestedBy: { select: { id: true, name: true, email: true, batchYear: true, department: true } } },
       }),

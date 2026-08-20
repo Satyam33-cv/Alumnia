@@ -61,13 +61,13 @@ router.get('/', async (req, res) => {
     if (featured === 'true') where.isFeatured = true;
 
     const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
-    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const pageNum = Math.min(Math.max(parseInt(page) || 1, 1), 1000);
     const skip = (pageNum - 1) * take;
 
     const [stories, total] = await Promise.all([
       prisma.successStory.findMany({
         where,
-        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }, { id: 'desc' }],
         skip, take,
         include: {
           alumni: {

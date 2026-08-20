@@ -88,9 +88,9 @@ export function DashboardContent() {
               </div>
               <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-2 w-full sm:w-auto shrink-0">
                 <span className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 px-2.5 py-0.5 rounded-lg">{a.match}% Match</span>
-                <button className="px-4 py-1.5 text-xs font-semibold text-white bg-primary-900 dark:bg-white dark:text-primary-900 rounded-lg hover:bg-primary-800 dark:hover:bg-slate-100 transition-colors shadow-sm">
+                <Link href="/referrals" className="px-4 py-1.5 text-xs font-semibold text-white bg-primary-900 dark:bg-white dark:text-primary-900 rounded-lg hover:bg-primary-800 dark:hover:bg-slate-100 transition-colors shadow-sm">
                   Request Referral
-                </button>
+                </Link>
               </div>
             </motion.div>
           ))}

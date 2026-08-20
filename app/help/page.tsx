@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Search, MessageSquare, LifeBuoy, CheckCircle2, ExternalLink,
-  ChevronRight, CircleDot, Clock, AlertTriangle,
+  Search, MessageSquare, LifeBuoy, CheckCircle2,
+  ChevronRight,
 } from "lucide-react";
 import { PreLoginNav } from "@/components/PreLoginNav";
 

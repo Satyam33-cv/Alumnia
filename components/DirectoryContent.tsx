@@ -11,6 +11,8 @@ import {
   Send,
   GraduationCap,
   MapPin,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { useDeferredValue, useMemo, useState } from "react";
 import { Card, EmptyState, ErrorState, Skeleton } from "@/components/ui";
@@ -34,7 +36,9 @@ type DirectoryAlumni = {
   isVerified?: boolean;
 };
 
-function DirectoryCard({ alumni }: { alumni: DirectoryAlumni }) {
+type ViewMode = "grid" | "list";
+
+function DirectoryGridCard({ alumni }: { alumni: DirectoryAlumni }) {
   const [bookmarked, setBookmarked] = useState(false);
 
   return (
@@ -93,10 +97,10 @@ function DirectoryCard({ alumni }: { alumni: DirectoryAlumni }) {
           <Send size={12} /> Message
         </Link>
         <Link
-          href="/mentorship"
-          className="inline-flex items-center gap-1.5 rounded-full border border-ink-900/15 px-3 py-1.5 text-[11px] font-semibold text-ink-900/70 transition-colors hover:border-sage-500 hover:text-sage-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+          href={`/mentorship?mentor=${alumni.id}`}
+          className="inline-flex items-center gap-1.5 rounded-full bg-brass px-3 py-1.5 text-[11px] font-semibold text-canvas transition-colors hover:bg-brass-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass"
         >
-          <GraduationCap size={12} /> Mentorship
+          <GraduationCap size={12} /> Request Mentorship
         </Link>
       </div>
 
@@ -110,10 +114,75 @@ function DirectoryCard({ alumni }: { alumni: DirectoryAlumni }) {
   );
 }
 
-export function DirectoryContent() {
-  const [query, setQuery] = useState("");
+function DirectoryListCard({ alumni }: { alumni: DirectoryAlumni }) {
+  const [bookmarked, setBookmarked] = useState(false);
+
+  return (
+    <motion.article
+      variants={slideUp}
+      className="group border border-ink-900/10 bg-white/70 p-4 transition-colors hover:border-brass-500/60"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-500 text-sm font-semibold text-white">
+            {alumni.initials}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-display text-lg">{alumni.name}</h3>
+              {alumni.isVerified && (
+                <ShieldCheck size={14} className="text-[#8a8f98]" />
+              )}
+            </div>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-ink-900/45">
+              Class of {alumni.batch}
+            </p>
+            <p className="mt-0.5 text-sm text-ink-900/55">
+              {alumni.role} at {alumni.company}
+            </p>
+            <p className="flex items-center gap-1 text-xs text-ink-900/50">
+              <MapPin size={12} /> {alumni.location}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setBookmarked(!bookmarked)}
+            className="p-1 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+            aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
+          >
+            <Heart
+              size={16}
+              className={
+                bookmarked
+                  ? "fill-clay-500 text-clay-500"
+                  : "text-ink-900/30 hover:text-clay-500"
+              }
+            />
+          </button>
+          <Link
+            href="/chat"
+            className="inline-flex items-center gap-1.5 rounded-full border border-ink-900/15 px-3 py-1.5 text-[11px] font-semibold text-ink-900/70 transition-colors hover:border-brass-500 hover:text-brass-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+          >
+            <Send size={11} /> Message
+          </Link>
+          <Link
+            href={`/mentorship?mentor=${alumni.id}`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brass px-3 py-1.5 text-[11px] font-semibold text-canvas transition-colors hover:bg-brass-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass"
+          >
+            <GraduationCap size={11} /> Request Mentorship
+          </Link>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+export function DirectoryContent({ initialQuery = "" }: { initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const [activeFilter, setActiveFilter] = useState<FilterType | null>(null);
   const [filterValue, setFilterValue] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const deferredQuery = useDeferredValue(query);
 
   const { data: allAlumni, error, isLoading, refresh } = useApi(
@@ -201,6 +270,8 @@ export function DirectoryContent() {
   const totalCount = allAlumni?.length ?? 0;
   const shownCount = filteredData?.length ?? 0;
 
+  const CardComponent = viewMode === "grid" ? DirectoryGridCard : DirectoryListCard;
+
   return (
     <>
       <motion.div
@@ -247,6 +318,38 @@ export function DirectoryContent() {
           )}
         </div>
       </Card>
+
+      <div className="mt-6 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2 text-xs text-ink-900/55">
+          <LayoutGrid size={14} /> View:
+        </div>
+        <div className="flex rounded-lg border border-ink-900/10 bg-white/50 p-1">
+          <button
+            onClick={() => setViewMode("grid")}
+            aria-label="Grid view"
+            aria-pressed={viewMode === "grid"}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === "grid"
+                ? "bg-brass text-canvas"
+                : "text-ink-900/60 hover:text-ink-900"
+            }`}
+          >
+            <LayoutGrid size={14} />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            aria-label="List view"
+            aria-pressed={viewMode === "list"}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === "list"
+                ? "bg-brass text-canvas"
+                : "text-ink-900/60 hover:text-ink-900"
+            }`}
+          >
+            <List size={14} />
+          </button>
+        </div>
+      </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <button
@@ -382,10 +485,14 @@ export function DirectoryContent() {
             variants={staggerContainer}
             initial="initial"
             animate="animate"
-            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            className={
+              viewMode === "grid"
+                ? "grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+                : "space-y-3"
+            }
           >
             {filteredData.map((alumni) => (
-              <DirectoryCard key={alumni.id} alumni={alumni} />
+              <CardComponent key={alumni.id} alumni={alumni} />
             ))}
           </motion.div>
         ) : null}

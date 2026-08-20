@@ -2,19 +2,17 @@
 
 import { useState, useEffect } from "react";
 import {
-  HelpCircle, Copy, Eye, EyeOff, RefreshCw, Check, KeyRound, User,
-  Users, CreditCard, Webhook, Building,
+  HelpCircle, Copy, Eye, EyeOff, RefreshCw, Check,
 } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { useTheme } from "@/components/ThemeProvider";
 
 type Tab = "Org" | "API Keys" | "Team" | "Usage" | "Billing" | "Webhooks";
 
 const tabs: Tab[] = ["Org", "API Keys", "Team", "Usage", "Billing", "Webhooks"];
 
 const apiKeys = [
-  { name: "Production Key", key: "sk_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8", created: "Aug 10, 2026", lastUsed: "2 hours ago" },
-  { name: "Development Key", key: "sk_test_x9y8z7w6v5u4t3s2r1q0p9o8n7m6l5k4j3h2", created: "Aug 15, 2026", lastUsed: "5 minutes ago" },
+  { name: "Production Key", key: "sk_live_", created: "Aug 10, 2026", lastUsed: "2 hours ago" },
+  { name: "Development Key", key: "sk_test_", created: "Aug 15, 2026", lastUsed: "5 minutes ago" },
 ];
 
 function SecretBar({ value, label }: { value: string; label?: string }) {
@@ -52,37 +50,72 @@ function SecretBar({ value, label }: { value: string; label?: string }) {
 }
 
 function OrgTab() {
+  const [orgName, setOrgName] = useState("Alumnia Inc.");
+  const [domain, setDomain] = useState("alumnia.io");
+  const [twoFA, setTwoFA] = useState(true);
+  const [sso, setSSO] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  function handleSave() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
   return (
     <div className="space-y-6">
       <div className="p-6 rounded-2xl border space-y-4 bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 shadow-sm">
         <h2 className="font-bold text-lg">Organization Details</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Organization Name</label>
-            <input defaultValue="Alumnia Inc." className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10" />
+            <label htmlFor="org-name" className="text-xs font-semibold text-slate-500 mb-1.5 block">Organization Name</label>
+            <input
+              id="org-name"
+              value={orgName}
+              onChange={(e) => setOrgName(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
+            />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-500 mb-1.5 block">Domain</label>
-            <input defaultValue="alumnia.io" className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10" />
+            <label htmlFor="org-domain" className="text-xs font-semibold text-slate-500 mb-1.5 block">Domain</label>
+            <input
+              id="org-domain"
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
+            />
           </div>
         </div>
+        <button
+          onClick={handleSave}
+          className="inline-flex items-center gap-2 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity"
+        >
+          {saved ? <Check className="w-3.5 h-3.5" /> : null}
+          {saved ? "Saved" : "Save Changes"}
+        </button>
       </div>
       <div className="p-6 rounded-2xl border space-y-4 bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 shadow-sm">
         <h2 className="font-bold text-lg">Security</h2>
         <div className="space-y-3">
           {[
-            { label: "Two-Factor Authentication", desc: "Require 2FA for all team members", on: true },
-            { label: "SSO Integration", desc: "Enable SAML-based single sign-on", on: false },
+            { label: "Two-Factor Authentication", desc: "Require 2FA for all team members", on: twoFA, set: setTwoFA },
+            { label: "SSO Integration", desc: "Enable SAML-based single sign-on", on: sso, set: setSSO },
           ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+            <button
+              key={item.label}
+              type="button"
+              role="switch"
+              aria-checked={item.on}
+              onClick={() => item.set(!item.on)}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-left"
+            >
               <div>
                 <p className="text-sm font-semibold">{item.label}</p>
                 <p className="text-xs text-slate-400">{item.desc}</p>
               </div>
-              <div className={`w-10 h-6 rounded-full relative cursor-pointer transition-colors ${item.on ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"}`}>
-                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${item.on ? "left-5" : "left-1"}`} />
-              </div>
-            </div>
+              <span className={`w-10 h-6 rounded-full relative transition-colors shrink-0 ${item.on ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"}`}>
+                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${item.on ? "left-5" : "left-1"}`} />
+              </span>
+            </button>
           ))}
         </div>
       </div>
@@ -99,9 +132,6 @@ function ApiKeysTab() {
             <h2 className="font-bold text-lg">API Keys</h2>
             <span className="px-2 py-0.5 text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full">BETA</span>
           </div>
-          <button className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-            <RefreshCw className="w-3.5 h-3.5" /> REFRESH
-          </button>
         </div>
         <div className="space-y-4">
           {apiKeys.map((k) => (
@@ -131,9 +161,6 @@ function TeamTab() {
     <div className="p-6 rounded-2xl border bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-bold text-lg">Team Members</h2>
-        <button className="inline-flex items-center gap-2 bg-indigo-600 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors">
-          <Users className="w-3.5 h-3.5" /> Invite
-        </button>
       </div>
       <div className="divide-y divide-slate-100 dark:divide-slate-800">
         {members.map((m) => (
@@ -283,8 +310,6 @@ const tabContent: Record<Tab, () => JSX.Element> = {
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Webhooks");
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const Content = tabContent[activeTab];
 
   return (

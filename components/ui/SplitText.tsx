@@ -50,28 +50,30 @@ export function SplitText({
     visible: { transition: { staggerChildren, delayChildren: delay } },
   };
 
+  const MotionTag = motion[Tag];
+
   return (
-    <motion.div
+    <MotionTag
       ref={ref}
       initial="hidden"
       animate={controls}
       variants={containerVariants}
       aria-label={children}
+      className={className}
     >
-      <Tag className={className}>
-        {words.map((word, i) => (
-          <span key={i} className="inline-block overflow-hidden mr-[0.25em]">
-            <motion.span
-              className="inline-block"
-              variants={wordVariants}
-              transition={{ duration, ease: "easeOut" }}
-            >
-              {word}
-            </motion.span>
-          </span>
-        ))}
-      </Tag>
-    </motion.div>
+      {words.map((word, i) => (
+        <span key={i} className="inline-block overflow-hidden">
+          <motion.span
+            className="inline-block"
+            variants={wordVariants}
+            transition={{ duration, ease: "easeOut" }}
+          >
+            {word}
+          </motion.span>
+          {i < words.length - 1 ? "\u00A0" : null}
+        </span>
+      ))}
+    </MotionTag>
   );
 }
 

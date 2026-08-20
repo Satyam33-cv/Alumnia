@@ -2,9 +2,12 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Play, Sparkles, BookOpen } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { SplitText, FadeUp } from "@/components/ui/SplitText";
 
 export function EditorialHero() {
+  const router = useRouter();
+
   return (
     <section className="relative bg-editorial overflow-hidden">
       {/* Grid pattern background */}
@@ -51,6 +54,7 @@ export function EditorialHero() {
               <motion.button
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => router.push("/register")}
                 className="inline-flex items-center gap-2.5 rounded-pill bg-editorial-green px-7 py-3.5 text-sm font-bold text-editorial-ink shadow-[0_4px_20px_rgba(0,255,132,0.25)] hover:shadow-[0_8px_32px_rgba(0,255,132,0.35)] transition-shadow"
               >
                 Start Learning Free
@@ -59,6 +63,7 @@ export function EditorialHero() {
               <motion.button
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => router.push("/directory")}
                 className="inline-flex items-center gap-2.5 rounded-pill border-2 border-editorial-ink/10 px-7 py-3.5 text-sm font-bold text-editorial-ink hover:border-editorial-ink/20 hover:bg-editorial-muted transition-all"
               >
                 <Play className="size-4 fill-editorial-ink" />

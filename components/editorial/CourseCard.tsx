@@ -35,15 +35,27 @@ export function CourseCard({
   students,
   rating,
   progress,
+  thumbnail,
   tags,
   index = 0,
 }: CourseCardProps) {
+  const safeProgress = progress === undefined ? undefined : Math.min(100, Math.max(0, progress));
+
   return (
     <FadeUp delay={index * 0.08} className="group">
       <div className="relative rounded-2xl bg-editorial-card border border-editorial-subtle/60 shadow-float hover:shadow-floatHover transition-all duration-300 overflow-hidden hover:-translate-y-1">
-        {/* Thumbnail placeholder */}
+        {/* Thumbnail */}
         <div className="relative h-44 bg-gradient-to-br from-editorial-ink via-editorial-ink/90 to-editorial-ink/70 overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,#00FF8420_1px,transparent_1px),linear-gradient(-45deg,#FF6B5220_1px,transparent_1px)] bg-[size:16px_16px]" />
+          {thumbnail ? (
+            <img
+              src={thumbnail}
+              alt={title}
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,#00FF8420_1px,transparent_1px),linear-gradient(-45deg,#FF6B5220_1px,transparent_1px)] bg-[size:16px_16px]" />
+          )}
           <div className="absolute inset-0 flex items-center justify-center">
             <BookOpen className="size-10 text-editorial-green/40" />
           </div>
@@ -84,17 +96,17 @@ export function CourseCard({
           </div>
 
           {/* Progress bar */}
-          {progress !== undefined && (
+          {safeProgress !== undefined && (
             <div className="mt-4">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-semibold text-editorial-ink/50">Progress</span>
-                <span className="text-xs font-bold text-editorial-green">{progress}%</span>
+                <span className="text-xs font-bold text-editorial-green">{safeProgress}%</span>
               </div>
               <div className="h-2 rounded-full bg-editorial-muted overflow-hidden">
                 <motion.div
                   className="h-full rounded-full bg-editorial-green"
                   initial={{ width: 0 }}
-                  whileInView={{ width: `${progress}%` }}
+                  whileInView={{ width: `${safeProgress}%` }}
                   viewport={{ once: true }}
                   transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
                 />

@@ -7,9 +7,10 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navLinks = [
-  { label: "About", href: "#about" },
-  { label: "Education Center", href: "#education" },
-  { label: "Find Help", href: "#help" },
+  { label: "Features", href: "/#features" },
+  { label: "AI Matching", href: "/#matching" },
+  { label: "Education Center", href: "/education" },
+  { label: "Find Help", href: "/help" },
 ];
 
 export function PreLoginNav() {

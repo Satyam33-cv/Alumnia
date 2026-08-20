@@ -5,6 +5,8 @@ export type User = {
   name: string;
   email: string;
   role?: "student" | "alumni" | "admin" | "faculty";
+  batchYear?: number | string;
+  department?: string;
   alumni?: {
     graduationYear?: number;
     department?: string;
@@ -24,6 +26,8 @@ export type LoginInput = {
 
 export type RegisterInput = LoginInput & {
   name: string;
+  role?: "STUDENT" | "ALUMNI" | "FACULTY";
+  currentCompany?: string;
 };
 
 export type ReferralStatus = "pending" | "accepted" | "rejected" | "referred" | "hired";

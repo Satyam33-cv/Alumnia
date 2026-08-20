@@ -17,6 +17,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function NetworkPage() {
-  return <RoleShell><DirectoryContent /></RoleShell>;
+export default async function NetworkPage({ searchParams }: { searchParams?: { q?: string } }) {
+  return <RoleShell><DirectoryContent initialQuery={searchParams?.q ?? ""} /></RoleShell>;
 }

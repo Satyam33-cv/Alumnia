@@ -86,12 +86,12 @@ router.get('/alumni', async (req, res) => {
     if (location) where.location = { contains: location, mode: 'insensitive' };
 
     const take = Math.min(Math.max(parseInt(limit) || 24, 1), 100);
-    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const pageNum = Math.min(Math.max(parseInt(page) || 1, 1), 1000);
     const skip = (pageNum - 1) * take;
 
     const [alumni, total] = await Promise.all([
       prisma.user.findMany({
-        where, orderBy: [{ batchYear: 'desc' }, { name: 'asc' }],
+        where, orderBy: [{ batchYear: 'desc' }, { name: 'asc' }, { id: 'desc' }],
         skip, take,
         select: {
           id: true, name: true, role: true, avatarUrl: true,

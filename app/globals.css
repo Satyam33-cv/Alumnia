@@ -2,12 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
   --font-jakarta: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-jetbrains: "JetBrains Mono", monospace;
   --font-outfit: "Outfit", system-ui, sans-serif;
+  --font-inter: "Inter", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -37,6 +38,25 @@ a { color: inherit; text-decoration: none; }
 
 @layer utilities {
   .text-balance { text-wrap: balance; }
+  
+  /* Masonry grid for stories */
+  .masonry-grid {
+    columns: 1;
+    column-gap: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .masonry-grid { columns: 2; }
+  }
+  @media (min-width: 1024px) {
+    .masonry-grid { columns: 3; }
+  }
+  @media (min-width: 1280px) {
+    .masonry-grid { columns: 4; }
+  }
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
 }
 
 *:focus-visible {
@@ -55,6 +75,12 @@ a { color: inherit; text-decoration: none; }
 .dark .glass {
   background: rgba(9, 13, 22, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Animated background pattern (used by BackgroundPattern) */
+@keyframes pattern-shift {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 50px 50px, 50px 50px, 50px 50px, 50px 50px; }
 }
 
 /* Scrollbar */

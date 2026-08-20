@@ -20,6 +20,7 @@ type AuthContextValue = {
   role: UserRole;
   setUser: (user: AuthUser) => void;
   setSession: (session: AuthSession) => void;
+  switchRole: (role: UserRole) => void;
   signOut: () => void;
   loading: boolean;
 };
@@ -36,7 +37,7 @@ function getInitials(name: string): string {
 }
 
 function mapRole(apiRole?: string): UserRole {
-  switch (apiRole) {
+  switch (apiRole?.toLowerCase()) {
     case "admin":
       return "admin";
     case "faculty":
@@ -57,8 +58,8 @@ function userFromSession(session: AuthSession): AuthUser {
     email: u.email,
     role,
     initials: getInitials(name),
-    classYear: u.alumni?.graduationYear?.toString() ?? "2025",
-    department: u.alumni?.department ?? "Computer Science",
+    classYear: u.alumni?.graduationYear?.toString() ?? u.batchYear?.toString() ?? "2025",
+    department: u.alumni?.department ?? u.department ?? "Computer Science",
   };
 }
 
@@ -94,16 +95,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserState(userFromSession(session));
   }, []);
 
+  const switchRole = useCallback((next: UserRole) => {
+    setUserState((prev) => {
+      if (!prev) return prev;
+      const nextUser: AuthUser = { ...prev, role: next };
+      const session = getSession();
+      if (session) {
+        saveSession({
+          ...session,
+          user: { ...session.user, role: next.toUpperCase() as AuthSession["user"]["role"] },
+        });
+      }
+      return nextUser;
+    });
+  }, []);
+
   const signOut = useCallback(() => {
     setUserState(null);
     clearSession();
   }, []);
 
+  useEffect(() => {
+    function handleAuthExpired() {
+      signOut();
+    }
+    window.addEventListener("auth-expired", handleAuthExpired);
+    return () => window.removeEventListener("auth-expired", handleAuthExpired);
+  }, [signOut]);
+
   const role = user?.role ?? "student";
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, role, setUser, setSession, signOut, loading }),
-    [user, role, setUser, setSession, signOut, loading],
+    () => ({ user, role, setUser, setSession, switchRole, signOut, loading }),
+    [user, role, setUser, setSession, switchRole, signOut, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

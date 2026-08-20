@@ -2,9 +2,12 @@
 
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { SplitText, FadeUp } from "@/components/ui/SplitText";
 
 export function CTASection() {
+  const router = useRouter();
+
   return (
     <section className="py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,6 +35,7 @@ export function CTASection() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={() => router.push("/register")}
                     className="inline-flex items-center gap-2 rounded-pill bg-editorial-green px-8 py-4 text-sm font-bold text-editorial-ink shadow-[0_4px_24px_rgba(0,255,132,0.3)] hover:shadow-[0_8px_40px_rgba(0,255,132,0.4)] transition-shadow"
                   >
                     Create Free Account
@@ -40,6 +44,7 @@ export function CTASection() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={() => router.push("/education")}
                     className="inline-flex items-center gap-2 rounded-pill border-2 border-white/20 px-8 py-4 text-sm font-bold text-white hover:bg-white/5 transition-colors"
                   >
                     Explore Courses

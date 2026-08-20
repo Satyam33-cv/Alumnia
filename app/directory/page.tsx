@@ -17,6 +17,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DirectoryPage() {
-	return <RoleShell><DirectoryContent /></RoleShell>;
+export default async function DirectoryPage({ searchParams }: { searchParams?: { q?: string } }) {
+	return <RoleShell><DirectoryContent initialQuery={searchParams?.q ?? ""} /></RoleShell>;
 }

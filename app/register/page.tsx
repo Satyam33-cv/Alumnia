@@ -2,14 +2,80 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, User, Building, GraduationCap, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Mail, Lock, User, Building, Sparkles } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { apiClient } from "@/lib/api/client";
+import { ApiError } from "@/lib/api";
+import { useAuth } from "@/lib/context/AuthContext";
+
+type Role = "student" | "alumni";
+
+type FormValues = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  company: string;
+  password: string;
+  confirmPassword: string;
+};
+
+type FormErrors = Partial<Record<keyof FormValues, string>>;
+
+function validate(values: FormValues, role: Role): FormErrors {
+  const errors: FormErrors = {};
+  if (!values.firstName.trim()) errors.firstName = "Enter your first name.";
+  if (!values.lastName.trim()) errors.lastName = "Enter your last name.";
+  if (!values.email.trim()) errors.email = "Enter your email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = "Enter a valid email address.";
+  if (role === "alumni" && !values.company.trim()) errors.company = "Enter your company.";
+  if (values.password.length < 6) errors.password = "Use at least 6 characters.";
+  if (values.confirmPassword !== values.password) errors.confirmPassword = "Passwords must match.";
+  return errors;
+}
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<"student" | "alumni">("student");
+  const [role, setRole] = useState<Role>("student");
+  const [values, setValues] = useState<FormValues>({ firstName: "", lastName: "", email: "", company: "", password: "", confirmPassword: "" });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [serverError, setServerError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const router = useRouter();
+  const { setSession } = useAuth();
+
+  function setField(field: keyof FormValues, value: string) {
+    setValues((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextErrors = validate(values, role);
+    setErrors(nextErrors);
+    setServerError("");
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const session = await apiClient.auth.register({
+        name: `${values.firstName.trim()} ${values.lastName.trim()}`,
+        email: values.email.trim(),
+        password: values.password,
+        role: role === "alumni" ? "ALUMNI" : "STUDENT",
+        currentCompany: role === "alumni" ? values.company.trim() : undefined,
+      });
+      setSession(session);
+      router.push("/home");
+    } catch (error) {
+      setServerError(error instanceof ApiError ? error.message : "We could not create your account. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const inputClass = `w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`;
 
   return (
     <div className={`min-h-screen flex font-sans transition-colors duration-200 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
@@ -31,64 +97,95 @@ export default function RegisterPage() {
           {/* Role Toggle */}
           <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
             {(["student", "alumni"] as const).map((r) => (
-              <button key={r} onClick={() => setRole(r)} className={`flex-1 py-2 rounded-lg text-xs font-semibold capitalize transition-all ${
-                role === r ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-              }`}>
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRole(r)}
+                aria-pressed={role === r}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold capitalize transition-all ${
+                  role === r ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                }`}
+              >
                 {r === "student" ? "I'm a Student" : "I'm an Alumni"}
               </button>
             ))}
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">First Name</label>
+                <label htmlFor="register-first-name" className="text-xs font-semibold text-slate-500 mb-1 block">First Name</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input placeholder="John" className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`} />
+                  <input id="register-first-name" autoComplete="given-name" placeholder="John" value={values.firstName} onChange={(e) => setField("firstName", e.target.value)} className={inputClass} />
                 </div>
+                {errors.firstName ? <p className="text-xs text-red-500 mt-1">{errors.firstName}</p> : null}
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">Last Name</label>
-                <input placeholder="Smith" className={`w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`} />
+                <label htmlFor="register-last-name" className="text-xs font-semibold text-slate-500 mb-1 block">Last Name</label>
+                <input id="register-last-name" autoComplete="family-name" placeholder="Smith" value={values.lastName} onChange={(e) => setField("lastName", e.target.value)} className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800" />
+                {errors.lastName ? <p className="text-xs text-red-500 mt-1">{errors.lastName}</p> : null}
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Email Address</label>
+              <label htmlFor="register-email" className="text-xs font-semibold text-slate-500 mb-1 block">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input type="email" placeholder="you@university.edu" className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`} />
+                <input id="register-email" type="email" autoComplete="email" placeholder="you@university.edu" value={values.email} onChange={(e) => setField("email", e.target.value)} className={inputClass} />
               </div>
+              {errors.email ? <p className="text-xs text-red-500 mt-1">{errors.email}</p> : null}
             </div>
 
             {role === "alumni" && (
               <div>
-                <label className="text-xs font-semibold text-slate-500 mb-1 block">Company</label>
+                <label htmlFor="register-company" className="text-xs font-semibold text-slate-500 mb-1 block">Company</label>
                 <div className="relative">
                   <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input placeholder="Google" className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`} />
+                  <input id="register-company" autoComplete="organization" placeholder="Google" value={values.company} onChange={(e) => setField("company", e.target.value)} className={inputClass} />
                 </div>
+                {errors.company ? <p className="text-xs text-red-500 mt-1">{errors.company}</p> : null}
               </div>
             )}
 
             <div>
-              <label className="text-xs font-semibold text-slate-500 mb-1 block">Password</label>
+              <label htmlFor="register-password" className="text-xs font-semibold text-slate-500 mb-1 block">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
+                  id="register-password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   placeholder="••••••••••••"
-                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`}
+                  value={values.password}
+                  onChange={(e) => setField("password", e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {errors.password ? <p className="text-xs text-red-500 mt-1">{errors.password}</p> : null}
             </div>
 
-            <button type="submit" className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20">
-              Create Account
+            <div>
+              <label htmlFor="register-confirm" className="text-xs font-semibold text-slate-500 mb-1 block">Confirm Password</label>
+              <input
+                id="register-confirm"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="••••••••••••"
+                value={values.confirmPassword}
+                onChange={(e) => setField("confirmPassword", e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+              />
+              {errors.confirmPassword ? <p className="text-xs text-red-500 mt-1">{errors.confirmPassword}</p> : null}
+            </div>
+
+            {serverError ? <p role="alert" className="text-xs text-red-500">{serverError}</p> : null}
+
+            <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20">
+              {isSubmitting ? "Creating account..." : "Create Account"}
             </button>
           </form>
 

@@ -15,10 +15,8 @@ export function useTheme() {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const saved = localStorage.getItem("alumnia-theme") as Theme | null;
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const initial = saved || (systemDark ? "dark" : "light");
@@ -33,10 +31,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       document.documentElement.classList.toggle("dark", next === "dark");
       return next;
     });
-  }
-
-  if (!mounted) {
-    return <>{children}</>;
   }
 
   return (

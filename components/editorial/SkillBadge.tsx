@@ -64,7 +64,9 @@ export function LearningPathCard({
   category,
   index = 0,
 }: LearningPathCardProps) {
-  const progress = Math.round((completedSteps / steps) * 100);
+  const safeSteps = Math.max(1, steps);
+  const completed = Math.min(Math.max(completedSteps, 0), safeSteps);
+  const progress = Math.round((completed / safeSteps) * 100);
 
   return (
     <FadeUp delay={index * 0.1}>
@@ -75,11 +77,11 @@ export function LearningPathCard({
       >
         {/* Step indicator dots */}
         <div className="flex gap-1.5 mb-4">
-          {Array.from({ length: steps }).map((_, i) => (
+          {Array.from({ length: safeSteps }).map((_, i) => (
             <div
               key={i}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
-                i < completedSteps ? "bg-editorial-green" : "bg-editorial-muted"
+                i < completed ? "bg-editorial-green" : "bg-editorial-muted"
               }`}
             />
           ))}
@@ -96,7 +98,7 @@ export function LearningPathCard({
 
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-editorial-ink/40">
-            {completedSteps}/{steps} steps
+            {completed}/{safeSteps} steps
           </span>
           <span className="text-xs font-bold text-editorial-green">{progress}%</span>
         </div>

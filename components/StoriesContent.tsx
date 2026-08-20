@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Loader2 } from "lucide-react";
+import { X, Send, Loader2, Heart, Star, MessageSquare, ExternalLink, ChevronDown } from "lucide-react";
 import { Card, Badge } from "@/components/ui";
 import {
   stories as allStories,
@@ -12,6 +12,24 @@ import { fadeIn, slideUp, staggerContainer } from "@/lib/motion";
 
 type Filter = "published" | "all";
 
+const mockUpvotes: Record<string, number> = {
+  "story-1": 234,
+  "story-2": 189,
+  "story-3": 156,
+  "story-4": 98,
+  "story-5": 76,
+};
+
+const mockCelebrates: Record<string, number> = {
+  "story-1": 45,
+  "story-2": 32,
+  "story-3": 28,
+  "story-4": 15,
+  "story-5": 12,
+};
+
+const mockUserVotes: Record<string, "up" | "celebrate" | null> = {};
+
 export function StoriesContent() {
   const [filter, setFilter] = useState<Filter>("published");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -20,6 +38,7 @@ export function StoriesContent() {
   const [story, setStory] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [userVotes, setUserVotes] = useState<Record<string, "up" | "celebrate" | null>>(mockUserVotes);
 
   const filtered =
     filter === "published"
@@ -43,15 +62,38 @@ export function StoriesContent() {
     }, 800);
   };
 
+  const handleUpvote = (storyId: string) => {
+    setUserVotes((prev) => {
+      const current = prev[storyId];
+      if (current === "up") return prev;
+      return { ...prev, [storyId]: "up" };
+    });
+    showToast("Upvoted!");
+  };
+
+  const handleCelebrate = (storyId: string) => {
+    setUserVotes((prev) => {
+      const current = prev[storyId];
+      if (current === "celebrate") return prev;
+      return { ...prev, [storyId]: "celebrate" };
+    });
+    showToast("Celebrated! 🎉");
+  };
+
+  const upvoteCount = (storyId: string) => (mockUpvotes[storyId] || 0) + (userVotes[storyId] === "up" ? 1 : 0);
+  const celebrateCount = (storyId: string) => (mockCelebrates[storyId] || 0) + (userVotes[storyId] === "celebrate" ? 1 : 0);
+  const isUpvoted = (storyId: string) => userVotes[storyId] === "up";
+  const isCelebrated = (storyId: string) => userVotes[storyId] === "celebrate";
+
   return (
     <motion.div
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="max-w-3xl space-y-12"
+      className="space-y-12"
     >
       <motion.div variants={fadeIn}>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-sage-500">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-sage">
           Stories
         </p>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
@@ -60,12 +102,12 @@ export function StoriesContent() {
           </h1>
           <button
             onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-brass-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brass-600"
+            className="inline-flex items-center gap-2 rounded-full bg-brass px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-brass-600"
           >
             Share your story
           </button>
         </div>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-ink-900/55">
+        <p className="mt-3 max-w-xl text-sm leading-6 text-ink/55">
           Alumni success stories and referral outcomes
         </p>
       </motion.div>
@@ -77,8 +119,8 @@ export function StoriesContent() {
             onClick={() => setFilter(tab)}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
               filter === tab
-                ? "bg-ink-900 text-paper-50"
-                : "border border-ink-900/15 text-ink-900/60 hover:border-ink-900/30"
+                ? "bg-ink text-white"
+                : "border border-ink/15 text-ink/60 hover:border-ink/30"
             }`}
           >
             {tab === "published" ? "Published" : "All"}
@@ -86,7 +128,7 @@ export function StoriesContent() {
         ))}
       </motion.div>
 
-      <motion.div variants={staggerContainer} className="space-y-4">
+      <motion.div variants={staggerContainer} className="masonry-grid gap-6">
         {filtered.map((s) => (
           <StoryCard
             key={s.id}
@@ -95,11 +137,17 @@ export function StoriesContent() {
             onToggle={() =>
               setExpandedId(expandedId === s.id ? null : s.id)
             }
+            upvotes={upvoteCount(s.id)}
+            celebrates={celebrateCount(s.id)}
+            isUpvoted={isUpvoted(s.id)}
+            isCelebrated={isCelebrated(s.id)}
+            onUpvote={() => handleUpvote(s.id)}
+            onCelebrate={() => handleCelebrate(s.id)}
           />
         ))}
         {filtered.length === 0 && (
           <Card padding="lg">
-            <p className="text-center text-sm text-ink-900/50">
+            <p className="text-center text-sm text-ink/50">
               No stories to show.
             </p>
           </Card>
@@ -107,7 +155,7 @@ export function StoriesContent() {
       </motion.div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -122,25 +170,25 @@ export function StoriesContent() {
                   setTitle("");
                   setStory("");
                 }}
-                className="text-ink-900/40 hover:text-ink-900"
+                className="text-ink/40 hover:text-ink"
               >
                 <X size={18} />
               </button>
             </div>
             <div className="mt-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ink-900">
+                <label className="block text-sm font-medium text-ink">
                   Title
                 </label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Give your story a title"
-                  className="mt-2 w-full rounded-lg border border-ink-900/20 bg-transparent px-4 py-2.5 text-sm outline-none transition-colors focus:border-brass-500"
+                  className="mt-2 w-full rounded-lg border border-ink/20 bg-transparent px-4 py-2.5 text-sm outline-none transition-colors focus:border-brass"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink-900">
+                <label className="block text-sm font-medium text-ink">
                   Story
                 </label>
                 <textarea
@@ -148,14 +196,14 @@ export function StoriesContent() {
                   onChange={(e) => setStory(e.target.value)}
                   rows={5}
                   placeholder="Tell us about your journey…"
-                  className="mt-2 w-full rounded-lg border border-ink-900/20 bg-transparent px-4 py-3 text-sm leading-6 outline-none transition-colors focus:border-brass-500"
+                  className="mt-2 w-full rounded-lg border border-ink/20 bg-transparent px-4 py-3 text-sm leading-6 outline-none transition-colors focus:border-brass"
                 />
               </div>
             </div>
             <button
               onClick={handleSubmit}
               disabled={!title.trim() || !story.trim() || submitting}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-brass-500 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brass-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-brass px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brass-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? (
                 <Loader2 size={15} className="animate-spin" />
@@ -170,7 +218,7 @@ export function StoriesContent() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink-900 px-5 py-3 text-sm text-paper-50 shadow-lg">
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-5 py-3 text-sm text-white shadow-lg">
           {toast}
         </div>
       )}
@@ -182,20 +230,36 @@ function StoryCard({
   story: s,
   expanded,
   onToggle,
+  upvotes,
+  celebrates,
+  isUpvoted,
+  isCelebrated,
+  onUpvote,
+  onCelebrate,
 }: {
   story: Story;
   expanded: boolean;
   onToggle: () => void;
+  upvotes: number;
+  celebrates: number;
+  isUpvoted: boolean;
+  isCelebrated: boolean;
+  onUpvote: () => void;
+  onCelebrate: () => void;
 }) {
   const borderColor =
-    s.status === "published" ? "border-l-tertiaryOnContainer" : "border-l-brass-500";
+    s.status === "published" ? "border-l-tertiaryOnContainer" : "border-l-brass";
 
   return (
-    <motion.div variants={slideUp}>
+    <motion.div
+      variants={slideUp}
+      style={{ breakInside: "avoid" }}
+      className="masonry-item"
+    >
       <Card padding="lg" className={`border-l-2 ${borderColor}`}>
         <button
           onClick={onToggle}
-          className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+          className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brass"
         >
           <h3 className="font-display text-xl">{s.title}</h3>
           <AnimatePresence initial={false}>
@@ -206,7 +270,7 @@ function StoryCard({
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="mt-3 overflow-hidden text-sm leading-6 text-ink-900/70"
+                className="mt-3 overflow-hidden text-sm leading-6 text-ink/70"
               >
                 {s.excerpt}
               </motion.p>
@@ -215,30 +279,54 @@ function StoryCard({
                 key="truncated"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mt-3 line-clamp-3 text-sm leading-6 text-ink-900/70"
+                className="mt-3 line-clamp-3 text-sm leading-6 text-ink/70"
               >
                 {s.excerpt}
               </motion.p>
             )}
           </AnimatePresence>
         </button>
-        <div className="mt-5 flex items-center justify-between border-t border-ink-900/10 pt-4">
+        <div className="mt-5 flex items-center justify-between border-t border-ink/10 pt-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage-500 text-xs font-semibold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage/15 text-xs font-semibold text-sage">
               {s.authorInitials}
             </div>
             <div>
-              <p className="text-sm font-semibold text-ink-900">{s.author}</p>
-              <p className="text-xs text-ink-900/50">
+              <p className="text-sm font-semibold text-ink">{s.author}</p>
+              <p className="text-xs text-ink/50">
                 {s.role} · {s.company}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Badge tone="neutral">{s.batch}</Badge>
-            <span className="font-mono text-[10px] uppercase text-ink-900/40">
+            <span className="font-mono text-[10px] uppercase text-ink/40">
               {s.date}
             </span>
+            <button
+              onClick={onUpvote}
+              disabled={isCelebrated}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                isUpvoted
+                  ? "bg-sage text-white"
+                  : "border border-ink/15 text-ink/70 hover:border-sage hover:text-sage"
+              }`}
+            >
+              <Star size={11} className={isUpvoted ? "fill-current" : ""} />
+              {upvotes}
+            </button>
+            <button
+              onClick={onCelebrate}
+              disabled={isUpvoted}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                isCelebrated
+                  ? "bg-brass text-white"
+                  : "border border-ink/15 text-ink/70 hover:border-brass hover:text-brass"
+              }`}
+            >
+              <Heart size={11} className={isCelebrated ? "fill-current" : ""} />
+              {celebrates}
+            </button>
           </div>
         </div>
       </Card>

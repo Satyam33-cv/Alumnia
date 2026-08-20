@@ -13,7 +13,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
-      import("@/lib/auth").then(({ clearSession }) => clearSession());
+      window.dispatchEvent(new Event("auth-expired"));
     }
     return Promise.reject(error);
   },
@@ -50,7 +50,7 @@ export async function apiFetch<T>(config: AxiosRequestConfig): Promise<T> {
       const status = error.response?.status ?? 0;
 
       if (status === 401 && typeof window !== "undefined") {
-        import("@/lib/auth").then(({ clearSession }) => clearSession());
+        window.dispatchEvent(new Event("auth-expired"));
       }
 
       const responseData = error.response?.data as { message?: string; error?: string } | undefined;

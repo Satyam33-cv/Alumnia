@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  Bell, Search, LayoutDashboard, Users, FileText, Briefcase, CalendarDays,
+  Bell, LayoutDashboard, Users, FileText, Briefcase, CalendarDays,
   Settings, LogOut, ChevronRight, X, Search as SearchIcon, FileText as FileIcon,
-  Cpu, Globe, Database, Moon, Sun, Sparkles, HelpCircle, BookOpen, DollarSign, Menu,
+  Cpu, Globe, Database, Moon, Sun, Sparkles, BookOpen, DollarSign, Menu,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAuth } from "@/lib/context/AuthContext";
 
 const sidebarGroups = [
   {
@@ -57,12 +58,20 @@ const notifications = [
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, toggle } = useTheme();
+  const { user, signOut } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const unreadCount = notifications.filter((n) => n.unread).length;
   const isDark = theme === "dark";
+
+  function handleLogout() {
+    setProfileOpen(false);
+    signOut();
+    router.push("/login");
+  }
 
   return (
     <div className={`min-h-screen flex font-sans transition-colors duration-200 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-800"}`}>
@@ -167,7 +176,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-500" />}
                   {isDark ? "Light Mode" : "Dark Mode"}
                 </button>
-                <button className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-rose-500 ${isDark ? "hover:bg-rose-950/30" : "hover:bg-rose-50"}`}>
+                <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-rose-500 ${isDark ? "hover:bg-rose-950/30" : "hover:bg-rose-50"}`}>
                   <LogOut className="w-4 h-4" /> Log out
                 </button>
               </div>
@@ -179,10 +188,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             className={`w-full flex items-center justify-between p-2 rounded-xl transition-colors ${isDark ? "hover:bg-slate-800" : "hover:bg-slate-100"}`}
           >
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs">JS</div>
+              <div className="h-9 w-9 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs">
+                {user?.initials ?? "U"}
+              </div>
               <div className="text-left text-xs">
-                <p className="font-semibold">John Smith</p>
-                <p className="text-slate-400">Computer Science &apos;25</p>
+                <p className="font-semibold">{user?.name ?? "Guest"}</p>
+                <p className="text-slate-400">{user ? `${user.department} '${user.classYear.slice(-2)}` : "Not signed in"}</p>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-400" />

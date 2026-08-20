@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  BookOpen, PlayCircle, FileCode, ShieldCheck, Users, Search,
-  Terminal, Zap, Globe, ChevronRight, Copy, Check,
+  PlayCircle, FileCode, ShieldCheck, Users, Search,
+  Zap, Globe, ChevronRight, Copy, Check,
 } from "lucide-react";
 import { PreLoginNav } from "@/components/PreLoginNav";
 

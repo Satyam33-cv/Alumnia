@@ -1,10 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Sparkles, Zap, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function LandingHero() {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    router.push(`/directory?q=${encodeURIComponent(searchQuery.trim())}`);
+  }
   return (
     <section className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-hidden bg-slate-50 dark:bg-onyx">
       {/* Video Background */}
@@ -89,16 +98,22 @@ export function LandingHero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mt-8 max-w-md mx-auto md:mx-0"
           >
-            <div className="bg-white dark:bg-white/5 rounded-xl border border-primary-200 dark:border-white/10 p-1 pl-4 flex items-center shadow-card">
+            <form
+              onSubmit={handleSearch}
+              className="bg-white dark:bg-white/5 rounded-xl border border-primary-200 dark:border-white/10 p-1 pl-4 flex items-center shadow-card"
+            >
               <input
                 type="text"
                 placeholder="Search alumni by company, role, or skill..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search alumni"
                 className="w-full bg-transparent text-sm text-primary-900 dark:text-white outline-none placeholder:text-primary-400"
               />
-              <button type="button" aria-label="Search" className="bg-blue-600 text-white w-9 h-9 rounded-lg flex items-center justify-center shrink-0 hover:bg-blue-700 transition-colors">
+              <button type="submit" aria-label="Search" className="bg-blue-600 text-white w-9 h-9 rounded-lg flex items-center justify-center shrink-0 hover:bg-blue-700 transition-colors">
                 <ArrowRight className="w-4 h-4" />
               </button>
-            </div>
+            </form>
           </motion.div>
 
           {/* CTAs */}

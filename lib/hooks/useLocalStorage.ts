@@ -3,18 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === "undefined") return initialValue;
-    try {
-      const item = window.localStorage.getItem(key);
-      if (item !== null) {
-        return JSON.parse(item) as T;
-      }
-    } catch {
-      // ignore
-    }
-    return initialValue;
-  });
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
 
   useEffect(() => {
     try {

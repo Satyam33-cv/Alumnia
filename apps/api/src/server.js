@@ -37,14 +37,6 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts, please try again later' },
 });
 
-const csvImportLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many import requests, please try again later' },
-});
-
 // --- CORS ---
 const allowedOrigins = new Set([
   process.env.WEB_URL || 'http://localhost:3000',
@@ -87,7 +79,7 @@ app.use('/api/stories', require('./routes/stories'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/announcements', require('./routes/announcements'));
-app.use('/api/admin', csvImportLimiter, require('./routes/admin'));
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/matching', require('./routes/matching'));
 
@@ -118,8 +110,7 @@ function shutdown(signal) {
   console.log(`\n${signal} received — shutting down gracefully...`);
   server.close(() => {
     console.log('HTTP server closed');
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
+    const prisma = require('./db');
     prisma.$disconnect().then(() => {
       console.log('Database connections closed');
       process.exit(0);
