@@ -1,34 +1,35 @@
 "use client";
 
 import * as React from "react";
-import { useTooltip } from "@radix-ui/react-tooltip";
-import { User, Info } from "lucide-react";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { cn } from "@/lib/utils";
 
-type TooltipPlacement = "top" | "bottom" | "left" | "right";
-
-type TooltipProps = {
-  placement?: TooltipPlacement;
-  children: React.ReactNode;
+interface TooltipProps extends React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> {
   title: string;
-  className?: string;
-};
+  children: React.ReactNode;
+  placement?: "top" | "bottom" | "left" | "right";
+}
 
-export function Tooltip({ placement = "top", children, title, className }: TooltipProps) {
-  const { Component: TooltipComponent, trigger: TooltipTrigger } = useTooltip({
-    placement,
-  });
-
+export function Tooltip({ title, children, placement = "top", className, ...props }: TooltipProps) {
   return (
-    <TooltipComponent>
-      <TooltipTrigger asChild>
-        <button className="relative inline-flex items-center">{children}</button>
-      </TooltipTrigger>
-      <div className="flex max-w-xs flex-col items-start rounded-md bg-background p-2 text-sm text-foreground shadow-sm">
-        <span className="sr-only">{title}</span>
-        <span className="focus:not-[focus-visible]:hidden focus-visible:block absolute right-2 top-1/2 -translate-y-1/2">
+    <TooltipPrimitive.Provider>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>
+          {React.Children.only(children)}
+        </TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Content
+          side={placement}
+          className={cn(
+            "z-50 max-w-xs rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground shadow-md",
+            "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+            className
+          )}
+          {...props}
+        >
           {title}
-        </span>
-      </div>
-    </TooltipComponent>
+          <TooltipPrimitive.Arrow className="fill-background" />
+        </TooltipPrimitive.Content>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
   );
 }
