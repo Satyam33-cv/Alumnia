@@ -1,52 +1,39 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Lenis from "lenis";
 
-let lenis: Lenis | null = null;
+let lenisInstance: Lenis | null = null;
 
-export function useLenis() {
-  if (!lenis) {
-    lenis = new Lenis({
+function getLenis(): Lenis {
+  if (!lenisInstance) {
+    lenisInstance = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      direction: "vertical",
-      gestureDirection: "vertical",
-      smooth: true,
-      mouseMultiplier: 1,
-      smoothTouch: false,
+      smoothWheel: true,
       touchMultiplier: 1,
       infinite: false,
     });
-
-    lenis.on("scroll", (e) => {
-      // Custom scroll events can be handled here
-    });
   }
+  return lenisInstance;
+}
+
+export function useLenis() {
+  const lenis = getLenis();
+
+  useEffect(() => {
+    const tick = (time: number) => {
+      lenis.raf(time);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    return () => lenis.destroy();
+  }, []);
 
   return lenis;
 }
 
 export function LenisSmoothScroll({ className, children }: { className?: string; children: React.ReactNode }) {
-  const lenis = useLenis();
-
-  useEffect(() => {
-    if (lenis) {
-      lenis.on("scroll", (e) => {
-        // Trigger re-render or custom logic on scroll
-      });
-    }
-  }, [lenis]);
-
-  // Scroll animation loop
-  useEffect(() => {
-    if (lenis) {
-      const tick = (time: number) => {
-        lenis?.render(time);
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }
-  }, [lenis]);
-
+  useLenis();
   return <div className={className}>{children}</div>;
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 type BentoItem = {
   id: string;
@@ -34,7 +35,6 @@ export function BentoGrid({ items, className, gutter = 12 }: BentoGridProps) {
   const [layout, setLayout] = useState<Record<string, { x: number; y: number }>>({});
 
   useEffect(() => {
-    // Initialize layout
     const initial: Record<string, { x: number; y: number }> = {};
     items.forEach((item) => {
       initial[item.id] = { x: 0, y: 0 };
@@ -48,36 +48,29 @@ export function BentoGrid({ items, className, gutter = 12 }: BentoGridProps) {
       style={{ gridTemplateColumns: `repeat(auto-fill, minmax(280px, 1fr))` }}
     >
       {items.map((item) => {
-        const style = layout[item.id];
         const setting = gridSettings[item.i] || { w: 2, h: 1 };
 
         return (
           <motion.div
             key={item.id}
-            className="bento-item"
-            style={{ gridArea: item.i }}
+            className={cn("bento-item", "p-4 rounded-lg border bg-background hover:bg-background/80 transition-colors cursor-grab")}
             style={{
-              ...style,
+              gridArea: item.i,
               width: `${setting.w * 100}%`,
               height: `${setting.h * 100}%`,
             }}
-            drag
-            onDragStart={(e: DragEvent) => {
-              e.dataTransfer?.setData("text/plain", item.id);
-            }}
-            whileHover={motion.whileHover}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 8px 30px rgba(0,0,0,0.12)" }}
             variants={{
               visible: {
                 transition: { type: "spring", stiffness: 300, damping: 30 },
               },
             }}
+            initial="hidden"
+            animate="visible"
           >
-            <div
-              className="p-4 rounded-lg border bg-background hover:bg-background/80 transition-colors cursor-grab"
-              onDragStart={(e: DragEvent) => e.dataTransfer?.setData("text/plain", item.id)}
-            >
-              {item.children}
-            </div>
+            {item.children}
           </motion.div>
         );
       })}

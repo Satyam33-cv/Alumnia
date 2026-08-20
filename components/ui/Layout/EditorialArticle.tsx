@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
 type EditorialArticleProps = {
@@ -23,7 +22,6 @@ type EditorialArticleProps = {
 
 export function EditorialArticle({ story, onApprove, onReject }: EditorialArticleProps) {
   const [showModeration, setShowModeration] = useState(false);
-  const router = useRouter();
 
   return (
     <article className="prose max-w-2xl lg:max-w-3xl space-y-6 border-l-4 border-brass-500 px-6 py-6 bg-background">

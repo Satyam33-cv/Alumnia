@@ -3,6 +3,7 @@
 import * as React from "react";
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type AlertVariant = "default" | "destructive" | "success";
 
@@ -20,10 +21,12 @@ type AlertProps = {
 export function Alert({ variant = "default", title, description, action, dismissible }: AlertProps) {
   const [open, setOpen] = useState(true);
 
+  if (!open) return null;
+
   const colors = {
     default: { bg: "bg-border", border: "border-border", icon: "text-ink-900/80" },
     destructive: {
-      bg: "destructive/5",
+      bg: "bg-destructive/5",
       border: "border-destructive",
       icon: "text-destructive",
     },
@@ -36,16 +39,12 @@ export function Alert({ variant = "default", title, description, action, dismiss
     <div
       role="alert"
       className={cn(
-        "rounded-md border p-4 flex items-start gap-4 transition-colors",
+        "rounded-md border p-4 flex items-start gap-4 transition-colors shadow-sm",
         `border-${color.border.replace("border-", "")}`,
-        color.bg,
-        "shadow-sm"
+        color.bg
       )}
     >
-      <AlertCircle
-        className={cn("flex-shrink-0 size-5", color.icon)}
-        aria-hidden="true"
-      />
+      <AlertCircle className={cn("flex-shrink-0 size-5", color.icon)} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         {title && <p className="font-medium text-foreground">{title}</p>}
         <p className="mt-1 text-sm text-foreground/80">{description}</p>
