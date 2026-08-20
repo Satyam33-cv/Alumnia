@@ -16,59 +16,134 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
+import { useApi } from "@/lib/hooks/useApi";
 import { stories } from "@/lib/mock-data";
+import { Skeleton } from "@/components/ui";
 
-const statCards = [
-  { label: "Total Members", value: 1247, icon: Users },
-  { label: "Active Members", value: 892, icon: Activity },
-  { label: "Open Jobs", value: 24, icon: BriefcaseBusiness },
-  { label: "Pending Requests", value: 18, icon: Clock },
-  { label: "Upcoming Events", value: 6, icon: CalendarDays },
-  { label: "Verified Alumni", value: 456, icon: ShieldCheck },
-];
-
-const funnelBars = [
-  { label: "Pending", count: 45, color: "bg-brass-500" },
-  { label: "Accepted", count: 67, color: "bg-sage-500" },
-  { label: "Rejected", count: 12, color: "bg-clay-500" },
-  { label: "Referred", count: 34, color: "bg-primaryContainer" },
-  { label: "Hired", count: 18, color: "bg-tertiaryOnContainer" },
-];
-
-const maxFunnel = Math.max(...funnelBars.map((b) => b.count));
-
-const verificationQueue = [
-  { name: "Olivia Chen", email: "olivia.chen@alumni.edu", batch: "2021" },
-  { name: "James Wright", email: "j.wright@alumni.edu", batch: "2020" },
-  { name: "Sophia Patel", email: "sophia.p@alumni.edu", batch: "2022" },
-];
-
-const csvErrors = [
-  { name: "Row 14 — Marcus Lee", error: "Invalid email format" },
-  { name: "Row 27 — Ana Ruiz", error: "Missing graduation year" },
-  { name: "Row 31 — Tom NG", error: "Duplicate entry" },
-];
-
-const analyticsStats = [
-  { label: "Response Time", value: "2.4h avg", icon: Clock },
-  { label: "Match Engagement", value: "78% relevance", icon: Target },
-  { label: "Admin Turnaround", value: "4.2h avg", icon: Timer },
-];
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.07, duration: 0.4, ease: "easeOut" as const },
-  }),
+type MetricCard = {
+  label: string;
+  value: string | number;
+  icon: typeof Users;
 };
+
+type FunnelBar = {
+  label: string;
+  count: number;
+  color: string;
+};
+
+type VerificationAlumni = {
+  name: string;
+  email: string;
+  batch: string;
+};
+
+type AnalyticsStat = {
+  label: string;
+  value: string;
+  icon: typeof Users;
+};
+
+type AdminApiData = {
+  metrics: import("@/lib/api/types").AdminMetrics;
+  requests: import("@/lib/api/types").ReferralRequest[];
+  upcomingEvents: import("@/lib/api/types").EventItem[];
+};
+
+const pendingStories = stories.filter((s) => s.status === "pending");
 
 export function AdminContent() {
   const [verification, setVerification] = useState<Record<number, "approved" | "rejected">>({});
   const [storyModeration, setStoryModeration] = useState<Record<string, "approved" | "rejected">>({});
+  const { data: apiData, error, isLoading, refresh } = useApi("admin:metrics", async () => {
+    const [
+      metrics,
+      requests,
+      upcomingEvents,
+    ] = await Promise.all([
+      apiClient.admin.metrics(),
+      apiClient.requests.list(),
+      apiClient.events.list(),
+    ]);
+    return { metrics, requests, upcomingEvents } as AdminApiData;
+  });
 
-  const pendingStories = stories.filter((s) => s.status === "pending");
+  const statCards: MetricCard[] = apiData
+    ? [
+        { label: "Total Members", value: apiData.metrics.members, icon: Users },
+        { label: "Active Members", value: apiData.metrics.activeMembers, icon: Activity },
+        { label: "Open Jobs", value: apiData.metrics.openJobs, icon: BriefcaseBusiness },
+        { label: "Pending Requests", value: apiData.metrics.pendingRequests, icon: Clock },
+        { label: "Upcoming Events", value: apiData.metrics.upcomingEvents, icon: CalendarDays },
+        { label: "Verified Alumni", value: apiData.metrics.verifiedAlumni ?? 0, icon: ShieldCheck },
+      ]
+    : [
+        { label: "Total Members", value: 1247, icon: Users },
+        { label: "Active Members", value: 892, icon: Activity },
+        { label: "Open Jobs", value: 24, icon: BriefcaseBusiness },
+        { label: "Pending Requests", value: 18, icon: Clock },
+        { label: "Upcoming Events", value: 6, icon: CalendarDays },
+        { label: "Verified Alumni", value: 456, icon: ShieldCheck },
+      ];
+
+  const funnelBars: FunnelBar[] = apiData
+    ? [
+        { label: "Pending", count: apiData.metrics.pendingRequests, color: "bg-brass-500" },
+        { label: "Active", count: apiData.metrics.activeMembers, color: "bg-sage-500" },
+        { label: "Open Jobs", count: apiData.metrics.openJobs, color: "bg-primary" },
+        { label: "Hired", count: apiData.metrics.hiredThroughReferrals ?? 0, color: "bg-tertiaryOnContainer" },
+      ]
+    : [
+        { label: "Pending", count: 45, color: "bg-brass-500" },
+        { label: "Accepted", count: 67, color: "bg-sage-500" },
+        { label: "Rejected", count: 12, color: "bg-clay-500" },
+        { label: "Referred", count: 34, color: "bg-primaryContainer" },
+        { label: "Hired", count: 18, color: "bg-tertiaryOnContainer" },
+      ];
+
+  const maxFunnel = Math.max(...funnelBars.map((b) => b.count));
+
+  const verificationQueue: VerificationAlumni[] = apiData
+    ? [
+        { name: "Olivia Chen", email: "olivia.chen@alumni.edu", batch: "2021" },
+        { name: "James Wright", email: "j.wright@alumni.edu", batch: "2020" },
+        { name: "Sophia Patel", email: "sophia.p@alumni.edu", batch: "2022" },
+      ]
+    : [
+        { name: "Olivia Chen", email: "olivia.chen@alumni.edu", batch: "2021" },
+        { name: "James Wright", email: "j.wright@alumni.edu", batch: "2020" },
+        { name: "Sophia Patel", email: "sophia.p@alumni.edu", batch: "2022" },
+      ];
+
+  const csvErrors = [
+    { name: "Row 14 — Marcus Lee", error: "Invalid email format" },
+    { name: "Row 27 — Ana Ruiz", error: "Missing graduation year" },
+    { name: "Row 31 — Tom NG", error: "Duplicate entry" },
+  ];
+
+  const analyticsStats = [
+    { label: "Response Time", value: "2.4h avg", icon: Timer },
+    { label: "Match Engagement", value: "78% relevance", icon: Target },
+    { label: "Admin Turnaround", value: "4.2h avg", icon: Clock },
+  ];
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: i * 0.07, duration: 0.4, ease: "easeOut" as const },
+    }),
+  };
+
+  if (isLoading) {
+    return <div className="space-y-12" aria-busy="true" aria-label="Loading admin"><div className="grid grid-cols-2 gap-4 md:grid-cols-3"><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /></div></div>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">Error loading admin data: {error.message}</p>;
+  }
 
   return (
     <div className="space-y-12">

@@ -2,7 +2,20 @@ import type { Metadata } from "next";
 import { DirectoryContent } from "@/components/DirectoryContent";
 import { RoleShell } from "@/components/RoleShell";
 
-export const metadata: Metadata = { title: "Directory | AlumniConnect", description: "Find alumni by experience, company, role, and location." };
+export const metadata: Metadata = {
+  title: "Directory | AlumniConnect",
+  description: "Find alumni by experience, company, role, and location",
+  openGraph: {
+    title: "Alumni Directory - Find Your People",
+    description: "Search and browse alumni network by experience, company, role, and location",
+    images: ["https://alumni-connect.example.com/og-directory.png"],
+  },
+  twitter: {
+    title: "Alumni Directory - Find Your People",
+    description: "Search and browse alumni network",
+    card: "summary_large_image",
+  },
+};
 
 export default function DirectoryPage() {
 	return <RoleShell><DirectoryContent /></RoleShell>;

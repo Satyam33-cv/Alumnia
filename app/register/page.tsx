@@ -3,7 +3,20 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { RegisterForm } from "@/components/RegisterForm";
 
-export const metadata: Metadata = { title: "Create Your Profile | AlumniConnect" };
+export const metadata: Metadata = {
+  title: "Create Your Profile | AlumniConnect",
+  description: "Register for the alumni network and create your profile to connect with fellow graduates",
+  openGraph: {
+    title: "Register - AlumniConnect",
+    description: "Register for the alumni network and create your profile to connect with fellow graduates",
+    images: ["https://alumni-connect.example.com/og-register.png"],
+  },
+  twitter: {
+    title: "Register - AlumniConnect",
+    description: "Register for the alumni network and create your profile to connect with fellow graduates",
+    card: "summary_large_image",
+  },
+};
 
 export default function RegisterPage() {
 	return (

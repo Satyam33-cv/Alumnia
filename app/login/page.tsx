@@ -3,7 +3,20 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { LoginForm } from "@/components/LoginForm";
 
-export const metadata: Metadata = { title: "Sign In | AlumniConnect" };
+export const metadata: Metadata = {
+  title: "Sign In | AlumniConnect",
+  description: "Alumni network sign in - enter your credentials to access your account",
+  openGraph: {
+    title: "Sign In - AlumniConnect",
+    description: "Alumni network sign in - enter your credentials to access your account",
+    images: ["https://alumni-connect.example.com/og-login.png"],
+  },
+  twitter: {
+    title: "Sign In - AlumniConnect",
+    description: "Alumni network sign in - enter your credentials to access your account",
+    card: "summary_large_image",
+  },
+};
 
 export default function LoginPage() {
 	return (
