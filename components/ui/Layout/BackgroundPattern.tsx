@@ -6,12 +6,22 @@ type BackgroundPatternProps = {
   className?: string;
   speed?: number;
   color?: string;
+  children?: React.ReactNode;
+};
+
+const colorMap: Record<string, string> = {
+  brass: "#b8863b",
+  sage: "#5c7a6b",
+  clay: "#b5573f",
+  ink: "#12213d",
+  paper: "#f7f5f0",
 };
 
 export function BackgroundPattern({
   className,
   speed = 0.5,
   color = "brass",
+  children,
 }: BackgroundPatternProps) {
   const [phase, setPhase] = useState(0);
 
@@ -22,27 +32,21 @@ export function BackgroundPattern({
     return () => clearInterval(interval);
   }, []);
 
-  const colors = {
-    brass: "#b8863b",
-    sage: "#5c7a6b",
-    clay: "#b5573f",
-    ink: "#12213d",
-    paper: "#f7f5f0",
-  };
+  const primaryColor = colorMap[color] || colorMap.brass;
 
-  const primaryColor = color === "random"
-    ? Object.values(colors)[Math.floor(Math.random() * Object.values(colors).length)]
-    : colors[color];
+  const bgStyle = {
+    background: `linear-gradient(135deg, ${primaryColor} 25%, transparent 25%), linear-gradient(225deg, ${primaryColor} 25%, transparent 25%), linear-gradient(315deg, ${primaryColor} 25%, transparent 25%), linear-gradient(45deg, ${primaryColor} 25%, transparent 25%)`,
+    backgroundSize: "50px 50px",
+    animation: `pattern-shift ${speed}s linear infinite`,
+  };
 
   return (
     <div
       className={className || "min-h-[400px] relative overflow-hidden"}
-      style={{
-        background: `linear-gradient(135deg, ${primaryColor} 25%, transparent 25%), linear-gradient(225deg, ${primaryColor} 25%, transparent 25%), linear-gradient(315deg, ${primaryColor} 25%, transparent 25%), linear-gradient(45deg, ${primaryColor} 25%, transparent 25%)`,
-        backgroundSize: "50px 50px",
-        animation: `pattern-shift ${speed}s linear infinite`,
-      }
-    />
+      style={bgStyle}
+    >
+      {children}
+    </div>
   );
 }
 

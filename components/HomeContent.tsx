@@ -186,8 +186,111 @@ export function HomeContent() {
               ))}
             </div>
           </motion.div>
-        </BackgroundPattern>
-      </motion.div>
+
+          <motion.div variants={slideUp} className="mt-8">
+            <div className="mb-5 flex items-baseline justify-between">
+              <h2 className="font-display text-3xl">Recommended Alumni</h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {recommendedAlumni.slice(0, 6).map((alumni) => (
+                <Card key={alumni.id} padding="md" className="flex flex-col">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-sage-500 text-sm font-semibold text-white">
+                      {alumni.initials}
+                    </div>
+                    <div>
+                      <h3 className="font-display text-xl">{alumni.name}</h3>
+                      <p className="font-mono text-[10px] uppercase tracking-wider text-ink-900/45">
+                        Class of {alumni.batch}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 border-t border-ink-900/10 pt-4">
+                    <p className="text-sm font-medium">{alumni.role} <span className="text-ink-900/35">at</span> {alumni.company}</p>
+                    <p className="mt-1 flex items-center gap-1 text-xs text-ink-900/50">
+                      <Clock size={12} /> {alumni.location}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/directory/${alumni.id}`}
+                    className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-sage-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brass-500 group-hover:text-brass-500"
+                  >
+                    View profile
+                    <ArrowRight size={13} />
+                  </Link>
+                </Card>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div variants={slideUp} className="mt-8">
+            <div className="mb-5 flex items-baseline justify-between">
+              <h2 className="font-display text-3xl">Recent Activity</h2>
+              <Link
+                href="/notifications"
+                className="text-xs font-semibold text-sage-500 underline underline-offset-4"
+              >
+                View all
+              </Link>
+            </div>
+            <div className="divide-y divide-ink-900/10 border-y border-ink-900/10">
+              {recentActivity.map((activity) => (
+                <Link
+                  key={activity.text}
+                  href="#"
+                  className="flex items-center gap-4 py-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brass-500"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-brass-500/15 text-brass-500">
+                    <activity.icon size={18} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{activity.text}</p>
+                    <p className="mt-1 text-xs text-ink-900/50">{activity.time}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div variants={slideUp} className="mt-8">
+            <div className="mb-5 flex items-baseline justify-between">
+              <h2 className="font-display text-3xl">Announcements</h2>
+              <Link
+                href="/announcements"
+                className="text-xs font-semibold text-sage-500 underline underline-offset-4"
+              >
+                View all
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {announcements.slice(0, 2).map((ann) => (
+                <Card key={ann.id} padding="md">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-brass-500/15 text-brass-500">
+                      <Megaphone size={14} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display text-lg">{ann.title}</h3>
+                      <p className="mt-2 line-clamp-2 text-xs leading-5 text-ink-900/55">
+                        {ann.body}
+                      </p>
+                      <div className="mt-3 flex items-center gap-2">
+                        <span className="text-[11px] font-medium text-ink-900/70">
+                          {ann.author}
+                        </span>
+                        <span className="text-[10px] text-ink-900/35">·</span>
+                        <span className="font-mono text-[10px] text-ink-900/40">
+                          {ann.date}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
+      </BackgroundPattern>
     </>
   );
 }
