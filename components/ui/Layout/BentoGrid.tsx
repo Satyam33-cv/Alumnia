@@ -13,6 +13,7 @@ type BentoItem = {
   minH?: number;
   maxH?: number;
   move?: boolean;
+  children: React.ReactNode;
 };
 
 type BentoGridProps = {
@@ -43,7 +44,7 @@ export function BentoGrid({ items, className, gutter = 12 }: BentoGridProps) {
 
   return (
     <div
-      className={`grid gap-${gutter}px ${className}`}
+      className={cn(`grid gap-${gutter}px`, className)}
       style={{ gridTemplateColumns: `repeat(auto-fill, minmax(280px, 1fr))` }}
     >
       {items.map((item) => {
@@ -54,18 +55,17 @@ export function BentoGrid({ items, className, gutter = 12 }: BentoGridProps) {
           <motion.div
             key={item.id}
             className="bento-item"
-            id={item.id}
-            style={{ gridArea: `${item.i}` }}
+            style={{ gridArea: item.i }}
             style={{
               ...style,
               width: `${setting.w * 100}%`,
               height: `${setting.h * 100}%`,
             }}
-            dragEnabled
+            drag
             onDragStart={(e: DragEvent) => {
               e.dataTransfer?.setData("text/plain", item.id);
-            }
-            whileHover={motion.start}
+            }}
+            whileHover={motion.whileHover}
             variants={{
               visible: {
                 transition: { type: "spring", stiffness: 300, damping: 30 },
@@ -73,8 +73,8 @@ export function BentoGrid({ items, className, gutter = 12 }: BentoGridProps) {
             }}
           >
             <div
-              className="p-4 rounded-lg border border-border bg-background hover:bg-background/80 transition-colors cursor-grab"
-              onDragStart={(e: DragEvent) => e.dataTransfer!.setData("text/plain", item.id)}
+              className="p-4 rounded-lg border bg-background hover:bg-background/80 transition-colors cursor-grab"
+              onDragStart={(e: DragEvent) => e.dataTransfer?.setData("text/plain", item.id)}
             >
               {item.children}
             </div>

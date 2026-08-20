@@ -34,6 +34,16 @@ const config: Config = {
         sage: "#059669",
         clay: "#ea580c",
         mist: "#e2e8f0",
+        
+        /* shadcn-inspired mappings to our brand colors */
+        /* shadcn neutral-50 -> our paper-50 */
+        /* shadcn neutral-900 -> our ink-900 */
+        /* shadcn primary-500 -> our brass-500 */
+        /* shadcn primary-600 -> our brass-600 */
+        /* shadcn success -> our sage-500 */
+        /* shadcn warning -> our clay-500 */
+        /* shadcn info -> our sage-500 */
+        /* shadcn destructive -> our clay-500 */
       },
       borderRadius: {
         lg: "var(--radius-lg, 12px)",

@@ -36,14 +36,9 @@ export function BackgroundPattern({
 
   return (
     <div
-      className={`min-h-[400px] relative overflow-hidden ${className}`}
+      className={className || "min-h-[400px] relative overflow-hidden"}
       style={{
-        background: `
-          linear-gradient(135deg, ${primaryColor} 25%, transparent 25%),
-          linear-gradient(225deg, ${primaryColor} 25%, transparent 25%),
-          linear-gradient(315deg, ${primaryColor} 25%, transparent 25%),
-          linear-gradient(45deg, ${primaryColor} 25%, transparent 25%)
-        `,
+        background: `linear-gradient(135deg, ${primaryColor} 25%, transparent 25%), linear-gradient(225deg, ${primaryColor} 25%, transparent 25%), linear-gradient(315deg, ${primaryColor} 25%, transparent 25%), linear-gradient(45deg, ${primaryColor} 25%, transparent 25%)`,
         backgroundSize: "50px 50px",
         animation: `pattern-shift ${speed}s linear infinite`,
       }
