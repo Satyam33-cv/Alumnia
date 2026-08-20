@@ -20,6 +20,7 @@ import { apiClient } from "@/lib/api/client";
 import { useApi } from "@/lib/hooks/useApi";
 import { stories } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui";
+import { BentoGrid } from "@/components/ui/Layout/BentoGrid";
 
 type MetricCard = {
   label: string;
@@ -158,24 +159,64 @@ export function AdminContent() {
       </div>
 
       <section>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {statCards.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              custom={i}
-              initial="hidden"
-              animate="visible"
-              variants={cardVariants}
-              className="rounded-lg border border-ink-900/10 bg-white/70 p-5"
-            >
-              <stat.icon size={20} className="text-brass-500" />
-              <p className="mt-4 font-display text-4xl tracking-tight">
-                {stat.value.toLocaleString()}
-              </p>
-              <p className="mt-1 text-xs text-ink-900/50">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
+        <BentoGrid
+          items={[
+            { id: "stats-1", i: "stats-1", w: 2, h: 1, children: (
+              <div className="flex items-center gap-3">
+                <Users size={20} className="text-brass-500" />
+                <div>
+                  <p className="font-display text-4xl tracking-tight">{statCards[0]?.value?.toLocaleString()}</p>
+                  <p className="text-xs text-ink-900/50">{statCards[0]?.label}</p>
+                </div>
+              </div>
+            ) },
+            { id: "stats-2", i: "stats-2", w: 2, h: 1, children: (
+              <div className="flex items-center gap-3">
+                <Activity size={20} className="text-sage-500" />
+                <div>
+                  <p className="font-display text-4xl tracking-tight">{statCards[1]?.value?.toLocaleString()}</p>
+                  <p className="text-xs text-ink-900/50">{statCards[1]?.label}</p>
+                </div>
+              </div>
+            ) },
+            { id: "stats-3", i: "stats-3", w: 2, h: 1, children: (
+              <div className="flex items-center gap-3">
+                <BriefcaseBusiness size={20} className="text-brass-500" />
+                <div>
+                  <p className="font-display text-4xl tracking-tight">{statCards[2]?.value?.toLocaleString()}</p>
+                  <p className="text-xs text-ink-900/50">{statCards[2]?.label}</p>
+                </div>
+              </div>
+            ) },
+            { id: "stats-4", i: "stats-4", w: 2, h: 1, children: (
+              <div className="flex items-center gap-3">
+                <Clock size={20} className="text-clay-500" />
+                <div>
+                  <p className="font-display text-4xl tracking-tight">{statCards[3]?.value?.toLocaleString()}</p>
+                  <p className="text-xs text-ink-900/50">{statCards[3]?.label}</p>
+                </div>
+              </div>
+            ) },
+            { id: "stats-5", i: "stats-5", w: 2, h: 1, children: (
+              <div className="flex items-center gap-3">
+                <CalendarDays size={20} className="text-brass-500" />
+                <div>
+                  <p className="font-display text-4xl tracking-tight">{statCards[4]?.value?.toLocaleString()}</p>
+                  <p className="text-xs text-ink-900/50">{statCards[4]?.label}</p>
+                </div>
+              </div>
+            ) },
+            { id: "stats-6", i: "stats-6", w: 2, h: 1, children: (
+              <div className="flex items-center gap-3">
+                <ShieldCheck size={20} className="text-brass-500" />
+                <div>
+                  <p className="font-display text-4xl tracking-tight">{statCards[5]?.value?.toLocaleString()}</p>
+                  <p className="text-xs text-ink-900/50">{statCards[5]?.label}</p>
+                </div>
+              </div>
+            ) },
+          ]}
+        />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { BackgroundPattern } from "@/components/ui/Layout/BackgroundPattern";
 import {
   BriefcaseBusiness,
   GraduationCap,
@@ -98,23 +99,24 @@ export function HomeContent() {
   const upcomingEvent = getDaysUntilNextEvent();
 
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="initial"
-      animate="animate"
-      className="space-y-14"
-    >
-      <motion.div variants={slideUp}>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-sage-500">
-          Welcome back
-        </p>
-        <h1 className="mt-2 font-display text-5xl tracking-tight">
-          {firstName}
-        </h1>
-        <p className="mt-3 text-sm text-ink-900/55">
-          Class of {user.classYear} · {user.department}
-        </p>
-      </motion.div>
+    <BackgroundPattern color="brass" speed={0.8}>
+      <motion.div
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="space-y-14 relative"
+      >
+        <motion.div variants={slideUp}>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-sage-500">
+            Welcome back
+          </p>
+          <h1 className="mt-2 font-display text-5xl tracking-tight">
+            {firstName}
+          </h1>
+          <p className="mt-3 text-sm text-ink-900/55">
+            Class of {user.classYear} · {user.department}
+          </p>
+        </motion.div>
 
       {upcomingEvent && (
         <motion.div variants={slideUp}>
