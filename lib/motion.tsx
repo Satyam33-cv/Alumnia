@@ -63,14 +63,14 @@ export function StaggerItem({ children, className, onClick }: MotionDivProps) {
   );
 }
 
-export function PageTransition({ children }: { children: ReactNode }) {
+export function AnimatePage({ children }: { children: ReactNode }) {
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        initial={fadeIn.initial}
-        animate={fadeIn.animate}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
-        transition={fadeIn.transition}
+        transition={{ duration: 0.3, ease: "easeOut" }}
       >
         {children}
       </motion.div>

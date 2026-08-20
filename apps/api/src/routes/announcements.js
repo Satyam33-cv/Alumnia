@@ -29,9 +29,15 @@ router.post('/', authenticate, requireRole('FACULTY', 'ADMIN'), async (req, res)
 // =================== GET /api/announcements ===================
 router.get('/', async (req, res) => {
   try {
+    const { page = 1, limit = 20 } = req.query;
+    const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
+
     const [announcements, total] = await Promise.all([
       prisma.announcement.findMany({
         orderBy: { createdAt: 'desc' },
+        skip, take,
         include: {
           createdBy: { select: { id: true, name: true, avatarUrl: true, department: true, role: true } },
         },
@@ -39,7 +45,10 @@ router.get('/', async (req, res) => {
       prisma.announcement.count(),
     ]);
 
-    res.json({ announcements, count: total });
+    res.json({
+      announcements,
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
+    });
   } catch (err) {
     console.error('GET /announcements error:', err);
     res.status(500).json({ error: 'Failed to fetch announcements' });

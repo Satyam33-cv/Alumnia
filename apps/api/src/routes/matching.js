@@ -62,10 +62,7 @@ router.get('/top-alumni', authenticate, requireRole('STUDENT'), async (req, res)
     res.json({ student: { id: student.id, name: student.name }, alumni });
   } catch (err) {
     console.error('GET /matching/top-alumni error:', err);
-    const hint = /extension|vector/i.test(err.message)
-      ? ' Enable the pgvector extension: CREATE EXTENSION IF NOT EXISTS vector;'
-      : '';
-    res.status(500).json({ error: 'Failed to compute matches', detail: err.message + hint });
+    res.status(500).json({ error: 'Failed to compute matches' });
   }
 });
 
@@ -98,7 +95,7 @@ router.post('/sync', authenticate, requireRole('ADMIN'), async (req, res) => {
     res.json({ message: 'Embedding sync complete', total: users.length, updated, skipped });
   } catch (err) {
     console.error('POST /matching/sync error:', err);
-    res.status(500).json({ error: 'Failed to sync embeddings', detail: err.message });
+    res.status(500).json({ error: 'Failed to sync embeddings' });
   }
 });
 
@@ -119,7 +116,7 @@ router.post('/sync-me', authenticate, async (req, res) => {
     res.json({ message: 'Your profile embedding is up to date' });
   } catch (err) {
     console.error('POST /matching/sync-me error:', err);
-    res.status(500).json({ error: 'Failed to embed profile', detail: err.message });
+    res.status(500).json({ error: 'Failed to embed profile' });
   }
 });
 

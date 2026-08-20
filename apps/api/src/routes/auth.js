@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../db');
 const { authenticate, JWT_SECRET } = require('../middleware/auth');
 
-const VALID_ROLES = ['ALUMNI', 'STUDENT', 'FACULTY', 'ADMIN'];
+const PUBLIC_VALID_ROLES = ['ALUMNI', 'STUDENT', 'FACULTY'];
 
 // =================== POST /api/auth/register ===================
 router.post('/register', async (req, res) => {
@@ -25,8 +25,8 @@ router.post('/register', async (req, res) => {
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
-    if (!VALID_ROLES.includes(role)) {
-      return res.status(400).json({ error: 'Invalid role' });
+    if (!PUBLIC_VALID_ROLES.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Allowed: ALUMNI, STUDENT, FACULTY' });
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'Invalid email format' });

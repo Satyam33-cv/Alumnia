@@ -29,26 +29,27 @@ router.post('/', authenticate, requireRole('STUDENT', 'ALUMNI'), async (req, res
     });
     if (existing) return res.status(409).json({ error: 'You already requested a referral for this job' });
 
-    // Check if referral slots are filled
-    const acceptedCount = await prisma.referralRequest.count({
-      where: { jobId, status: { in: ['ACCEPTED', 'REFERRED', 'HIRED'] } },
-    });
-    if (acceptedCount >= job.referralSlots) {
-      return res.status(400).json({ error: 'All referral slots for this job are filled' });
-    }
-
-    const referral = await prisma.referralRequest.create({
-      data: {
-        jobId,
-        requestedById: req.user.id,
-        referredById: job.postedById,
-        resumeUrl, coverLetter, studentNote,
-      },
-      include: {
-        job: { select: { id: true, title: true, company: true } },
-        requestedBy: { select: { id: true, name: true, email: true } },
-        referredBy: { select: { id: true, name: true, email: true } },
-      },
+    // Check if referral slots are filled (atomic check within a transaction)
+    const referral = await prisma.$transaction(async (tx) => {
+      const acceptedCount = await tx.referralRequest.count({
+        where: { jobId, status: { in: ['ACCEPTED', 'REFERRED', 'HIRED'] } },
+      });
+      if (acceptedCount >= job.referralSlots) {
+        throw new Error('SLOTS_FULL');
+      }
+      return tx.referralRequest.create({
+        data: {
+          jobId,
+          requestedById: req.user.id,
+          referredById: job.postedById,
+          resumeUrl, coverLetter, studentNote,
+        },
+        include: {
+          job: { select: { id: true, title: true, company: true } },
+          requestedBy: { select: { id: true, name: true, email: true } },
+          referredBy: { select: { id: true, name: true, email: true } },
+        },
+      });
     });
 
     // Notify the alumni (in-app + email + WhatsApp)
@@ -68,6 +69,9 @@ router.post('/', authenticate, requireRole('STUDENT', 'ALUMNI'), async (req, res
 
     res.status(201).json({ referral });
   } catch (err) {
+    if (err.message === 'SLOTS_FULL') {
+      return res.status(400).json({ error: 'All referral slots for this job are filled' });
+    }
     console.error('POST /referrals error:', err);
     res.status(500).json({ error: 'Failed to create referral request' });
   }
@@ -77,15 +81,28 @@ router.post('/', authenticate, requireRole('STUDENT', 'ALUMNI'), async (req, res
 // Referral requests I (as student) have sent
 router.get('/me/sent', authenticate, async (req, res) => {
   try {
-    const referrals = await prisma.referralRequest.findMany({
-      where: { requestedById: req.user.id },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        job: { select: { id: true, title: true, company: true, location: true } },
-        referredBy: { select: { id: true, name: true, currentCompany: true, avatarUrl: true } },
-      },
+    const { page = 1, limit = 20 } = req.query;
+    const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
+
+    const [referrals, total] = await Promise.all([
+      prisma.referralRequest.findMany({
+        where: { requestedById: req.user.id },
+        orderBy: { createdAt: 'desc' },
+        skip, take,
+        include: {
+          job: { select: { id: true, title: true, company: true, location: true } },
+          referredBy: { select: { id: true, name: true, currentCompany: true, avatarUrl: true } },
+        },
+      }),
+      prisma.referralRequest.count({ where: { requestedById: req.user.id } }),
+    ]);
+
+    res.json({
+      referrals,
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
     });
-    res.json({ referrals });
   } catch (err) {
     console.error('GET /referrals/me/sent error:', err);
     res.status(500).json({ error: 'Failed to fetch referrals' });
@@ -96,19 +113,31 @@ router.get('/me/sent', authenticate, async (req, res) => {
 // Referral requests I (as alumni) have received
 router.get('/me/received', authenticate, async (req, res) => {
   try {
-    const { status } = req.query;
+    const { status, page = 1, limit = 20 } = req.query;
     const where = { referredById: req.user.id };
     if (status) where.status = status;
 
-    const referrals = await prisma.referralRequest.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        job: { select: { id: true, title: true, company: true } },
-        requestedBy: { select: { id: true, name: true, email: true, batchYear: true, department: true, avatarUrl: true } },
-      },
+    const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
+
+    const [referrals, total] = await Promise.all([
+      prisma.referralRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip, take,
+        include: {
+          job: { select: { id: true, title: true, company: true } },
+          requestedBy: { select: { id: true, name: true, email: true, batchYear: true, department: true, avatarUrl: true } },
+        },
+      }),
+      prisma.referralRequest.count({ where }),
+    ]);
+
+    res.json({
+      referrals,
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
     });
-    res.json({ referrals });
   } catch (err) {
     console.error('GET /referrals/me/received error:', err);
     res.status(500).json({ error: 'Failed to fetch received referrals' });
@@ -220,12 +249,26 @@ router.get('/job/:jobId', authenticate, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
-    const referrals = await prisma.referralRequest.findMany({
-      where: { jobId: req.params.jobId },
-      orderBy: { createdAt: 'desc' },
-      include: { requestedBy: { select: { id: true, name: true, email: true, batchYear: true, department: true } } },
+    const { page = 1, limit = 20 } = req.query;
+    const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
+
+    const where = { jobId: req.params.jobId };
+    const [referrals, total] = await Promise.all([
+      prisma.referralRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip, take,
+        include: { requestedBy: { select: { id: true, name: true, email: true, batchYear: true, department: true } } },
+      }),
+      prisma.referralRequest.count({ where }),
+    ]);
+
+    res.json({
+      referrals,
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
     });
-    res.json({ referrals });
   } catch (err) {
     console.error('GET /referrals/job/:jobId error:', err);
     res.status(500).json({ error: 'Failed to fetch job referrals' });

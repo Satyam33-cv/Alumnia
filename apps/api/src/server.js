@@ -3,11 +3,49 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// --- Security Headers ---
+app.use(helmet({
+  contentSecurityPolicy: false, // disabled — frontend may inline scripts/styles
+  crossOriginEmbedderPolicy: false,
+}));
+
+// --- Request Logging ---
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+// --- Rate Limiting ---
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again later' },
+});
+
+const csvImportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many import requests, please try again later' },
+});
+
+// --- CORS ---
 const allowedOrigins = new Set([
   process.env.WEB_URL || 'http://localhost:3000',
   'http://localhost:3000',
@@ -16,11 +54,15 @@ const allowedOrigins = new Set([
   'http://127.0.0.1:8081',
 ]);
 
-// Middleware
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
-    if (process.env.NODE_ENV !== 'production' && /^http:\/\/192\.168\./.test(origin)) {
+    // Only allow requests with a defined, recognized origin (blocks null/undefined)
+    if (origin && allowedOrigins.has(origin)) return callback(null, true);
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      // Allow non-browser tools (Postman, curl) in dev only
+      return callback(null, true);
+    }
+    if (process.env.NODE_ENV !== 'production' && origin && /^http:\/\/192\.168\./.test(origin)) {
       return callback(null, true);
     }
     return callback(new Error('Origin not allowed by CORS'));
@@ -29,14 +71,15 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(globalLimiter);
 
-// Health check
+// --- Health check (before auth-protected routes) ---
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'alumni-api', time: new Date().toISOString() });
 });
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
+// --- Routes ---
+app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/referrals', require('./routes/referrals'));
@@ -44,19 +87,20 @@ app.use('/api/stories', require('./routes/stories'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/announcements', require('./routes/announcements'));
-app.use('/api/admin', require('./routes/admin'));
+app.use('/api/admin', csvImportLimiter, require('./routes/admin'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/matching', require('./routes/matching'));
 
-// Local file storage (used when Cloudinary is not configured)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// --- Local file uploads (auth-protected) ---
+const { authenticate } = require('./middleware/auth');
+app.use('/uploads', authenticate, express.static(path.join(__dirname, 'uploads')));
 
-// 404 handler
+// --- 404 handler ---
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found', path: req.path });
 });
 
-// Error handler
+// --- Error handler ---
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
   res.status(500).json({
@@ -64,6 +108,29 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Alumnia API running on http://localhost:${PORT}`);
+// --- Start server ---
+const server = app.listen(PORT, () => {
+  console.log(`Alumnia API running on http://localhost:${PORT}`);
 });
+
+// --- Graceful shutdown ---
+function shutdown(signal) {
+  console.log(`\n${signal} received — shutting down gracefully...`);
+  server.close(() => {
+    console.log('HTTP server closed');
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    prisma.$disconnect().then(() => {
+      console.log('Database connections closed');
+      process.exit(0);
+    }).catch(() => process.exit(1));
+  });
+  // Force exit after 10s if graceful shutdown hangs
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

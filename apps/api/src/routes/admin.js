@@ -85,8 +85,9 @@ router.get('/users', async (req, res) => {
       ];
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
+    const take = Math.min(Math.max(parseInt(limit) || 25, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
@@ -100,7 +101,7 @@ router.get('/users', async (req, res) => {
       prisma.user.count({ where }),
     ]);
 
-    res.json({ users, pagination: { total, page: parseInt(page), limit: take, pages: Math.ceil(total / take) } });
+    res.json({ users, pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) } });
   } catch (err) {
     console.error('GET /admin/users error:', err);
     res.status(500).json({ error: 'Failed to fetch users' });
@@ -184,7 +185,7 @@ router.post('/import-csv', upload.single('file'), async (req, res) => {
 
     // Send welcome emails to all newly created alumni
     if (imported.length > 0) {
-      console.log(`📧 Sending ${imported.length} welcome email(s) (temp password: ${tempPassword})`);
+      console.log(`📧 Sending ${imported.length} welcome email(s)`);
       await Promise.all(imported.map((u) => email.sendWelcomeEmail({ to: u.email, name: u.name, tempPassword })));
     }
 
@@ -194,13 +195,12 @@ router.post('/import-csv', upload.single('file'), async (req, res) => {
         imported: imported.length,
         skipped: skipped.length,
         failed: failed.length,
-        tempPassword,
       },
       imported, skipped, failed,
     });
   } catch (err) {
     console.error('POST /admin/import-csv error:', err);
-    res.status(500).json({ error: 'Failed to import CSV', detail: err.message });
+    res.status(500).json({ error: 'Failed to import CSV' });
   }
 });
 

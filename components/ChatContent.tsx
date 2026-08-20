@@ -50,15 +50,15 @@ const listItemVariants = {
   animate: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.05, duration: 0.3, ease: "easeOut" },
+    transition: { delay: i * 0.05, duration: 0.3, ease: "easeOut" as const },
   }),
   exit: { opacity: 0, y: -8, transition: { duration: 0.15 } },
 };
 
 const expandVariants = {
   initial: { height: 0, opacity: 0 },
-  animate: { height: "auto", opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
-  exit: { height: 0, opacity: 0, transition: { duration: 0.2, ease: "easeIn" } },
+  animate: { height: "auto" as const, opacity: 1, transition: { duration: 0.3, ease: "easeOut" as const } },
+  exit: { height: 0, opacity: 0, transition: { duration: 0.2, ease: "easeIn" as const } },
 };
 
 const modalBackdrop = {
@@ -69,7 +69,7 @@ const modalBackdrop = {
 
 const modalContent = {
   initial: { opacity: 0, scale: 0.95, y: 16 },
-  animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+  animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" as const } },
   exit: { opacity: 0, scale: 0.95, y: 16, transition: { duration: 0.15 } },
 };
 

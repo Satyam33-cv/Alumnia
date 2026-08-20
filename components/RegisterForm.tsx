@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { ApiError } from "@/lib/api";
-import { saveSession } from "@/lib/auth";
+import { useAuth } from "@/lib/context/AuthContext";
 import { Button, Field } from "@/components/ui";
 
 type FormValues = { firstName: string; lastName: string; email: string; password: string; confirmPassword: string };
@@ -24,6 +24,7 @@ function validate(values: FormValues): FormErrors {
 
 export function RegisterForm() {
   const router = useRouter();
+  const { setSession } = useAuth();
   const [values, setValues] = useState<FormValues>({ firstName: "", lastName: "", email: "", password: "", confirmPassword: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [serverError, setServerError] = useState("");
@@ -39,7 +40,7 @@ export function RegisterForm() {
     setIsSubmitting(true);
     try {
       const session = await apiClient.auth.register({ name: `${values.firstName.trim()} ${values.lastName.trim()}`, email: values.email.trim(), password: values.password });
-      saveSession(session);
+      setSession(session);
       router.push("/dashboard");
     } catch (error) {
       setServerError(error instanceof ApiError ? error.message : "We could not create your profile. Please try again.");

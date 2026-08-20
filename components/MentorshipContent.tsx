@@ -9,7 +9,6 @@ import type { MentorshipRequest } from "@/lib/mock-data";
 import { Card } from "@/components/ui";
 import { MatchRing } from "@/components/MatchRing";
 import {
-  fadeIn,
   slideUp,
   staggerContainer,
 } from "@/lib/motion";

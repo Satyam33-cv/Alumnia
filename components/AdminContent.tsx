@@ -41,12 +41,6 @@ type VerificationAlumni = {
   batch: string;
 };
 
-type AnalyticsStat = {
-  label: string;
-  value: string;
-  icon: typeof Users;
-};
-
 type AdminApiData = {
   metrics: import("@/lib/api/types").AdminMetrics;
   requests: import("@/lib/api/types").ReferralRequest[];
@@ -58,7 +52,7 @@ const pendingStories = stories.filter((s) => s.status === "pending");
 export function AdminContent() {
   const [verification, setVerification] = useState<Record<number, "approved" | "rejected">>({});
   const [storyModeration, setStoryModeration] = useState<Record<string, "approved" | "rejected">>({});
-  const { data: apiData, error, isLoading, refresh } = useApi("admin:metrics", async () => {
+  const { data: apiData, error, isLoading } = useApi("admin:metrics", async () => {
     const [
       metrics,
       requests,
@@ -129,15 +123,6 @@ export function AdminContent() {
     { label: "Match Engagement", value: "78% relevance", icon: Target },
     { label: "Admin Turnaround", value: "4.2h avg", icon: Clock },
   ];
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 16 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: { delay: i * 0.07, duration: 0.4, ease: "easeOut" as const },
-    }),
-  };
 
   if (isLoading) {
     return <div className="space-y-12" aria-busy="true" aria-label="Loading admin"><div className="grid grid-cols-2 gap-4 md:grid-cols-3"><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /><Skeleton className="p-5" /></div></div>;
@@ -306,6 +291,7 @@ export function AdminContent() {
                           setVerification((prev) => ({ ...prev, [i]: "approved" }))
                         }
                         className="rounded-full bg-sage-500 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-sage-500/80"
+                        aria-label={`Approve ${verificationQueue[i]?.name}`}
                       >
                         Approve
                       </button>
@@ -314,6 +300,7 @@ export function AdminContent() {
                           setVerification((prev) => ({ ...prev, [i]: "rejected" }))
                         }
                         className="rounded-full border border-clay-500 px-3 py-1 text-xs font-medium text-clay-500 transition-colors hover:bg-clay-500/5"
+                        aria-label={`Reject ${verificationQueue[i]?.name}`}
                       >
                         Reject
                       </button>
@@ -444,6 +431,7 @@ export function AdminContent() {
                           }))
                         }
                         className="rounded-full bg-sage-500 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-sage-500/80"
+                        aria-label={`Approve story: ${story.title}`}
                       >
                         Approve
                       </button>
@@ -455,6 +443,7 @@ export function AdminContent() {
                           }))
                         }
                         className="rounded-full border border-clay-500 px-3 py-1 text-xs font-medium text-clay-500 transition-colors hover:bg-clay-500/5"
+                        aria-label={`Reject story: ${story.title}`}
                       >
                         Reject
                       </button>

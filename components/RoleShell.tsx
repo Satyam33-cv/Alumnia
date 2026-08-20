@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
@@ -21,7 +21,7 @@ import {
   BookOpen,
   X,
 } from "lucide-react";
-import { clearSession } from "@/lib/auth";
+import { useAuth } from "@/lib/context/AuthContext";
 
 type Role = "student" | "alumni" | "admin" | "faculty";
 
@@ -81,13 +81,8 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function getNavClasses(
@@ -116,9 +111,46 @@ function NotificationPanel({
   open: boolean;
   onClose: () => void;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !panel) return;
+      const focusable = panel.querySelectorAll<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    const firstButton = panel.querySelector<HTMLElement>("button");
+    firstButton?.focus();
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
   return (
-    <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-lg border border-border bg-canvas shadow-card">
+    <div
+      ref={panelRef}
+      role="dialog"
+      aria-label="Notifications"
+      className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-lg border border-border bg-canvas shadow-card"
+    >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <p className="text-sm font-semibold text-ink">Notifications</p>
         <button
@@ -149,11 +181,13 @@ function NotificationPanel({
 
 export function RoleShell({
   children,
-  role = "student",
+  role: roleOverride,
 }: {
   children: React.ReactNode;
   role?: Role;
 }) {
+  const { user, role: authRole, signOut, loading } = useAuth();
+  const role = roleOverride ?? authRole;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const pathname = usePathname();
@@ -169,14 +203,19 @@ export function RoleShell({
     setNotificationsOpen(false);
   }, [pathname]);
 
-  function signOut() {
-    clearSession();
+  function handleSignOut() {
+    signOut();
     router.push("/login");
   }
 
   function active(href: string) {
     return isActive(pathname, href);
   }
+
+  const displayName = user?.name ?? "Guest";
+  const displayInitials = user?.initials ?? "G";
+  const displayRole = capitalize(role);
+  const displayYear = user?.classYear ?? "—";
 
   function sidebarContent(mobile: boolean) {
     return (
@@ -199,14 +238,14 @@ export function RoleShell({
 
         <div className="flex items-center gap-3 border-b border-canvas/15 px-6 pb-6">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple text-sm font-semibold text-ink">
-            {getInitials("Ava Mitchell")}
+            {displayInitials}
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-canvas">
-              Ava Mitchell
+              {displayName}
             </p>
             <p className="font-mono text-[10px] uppercase tracking-wider text-canvas/45">
-              Student · 2025
+              {displayRole} · {displayYear}
             </p>
           </div>
         </div>
@@ -245,7 +284,7 @@ export function RoleShell({
             }`}
           >
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple text-primary-foreground">
-              {getInitials("Ava Mitchell")}
+              {displayInitials}
             </div>
             <span className="truncate">My Profile</span>
           </Link>
@@ -270,7 +309,7 @@ export function RoleShell({
         <div className="mt-auto space-y-3 border-t border-canvas/15 px-6 pt-5">
           <button
             type="button"
-            onClick={signOut}
+            onClick={handleSignOut}
             className="flex items-center gap-3 px-3 py-2 text-sm text-canvas/50 hover:text-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple"
           >
             <LogOut size={16} />
@@ -281,6 +320,14 @@ export function RoleShell({
           </p>
         </div>
       </>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/10 border-t-purple" />
+      </div>
     );
   }
 
@@ -365,7 +412,7 @@ export function RoleShell({
             </div>
 
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-purple text-xs font-semibold text-ink">
-              {getInitials("Ava Mitchell")}
+              {displayInitials}
             </div>
           </div>
         </header>

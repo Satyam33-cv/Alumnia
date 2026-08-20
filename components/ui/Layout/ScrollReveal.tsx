@@ -4,6 +4,8 @@ import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { motion } from "framer-motion";
 
+type MarginValue = `${number}px ${number}px ${number}px ${number}px`;
+
 type ScrollRevealProps = {
   children: React.ReactNode;
   className?: string;
@@ -11,7 +13,7 @@ type ScrollRevealProps = {
   duration?: number;
   direction?: "up" | "down" | "left" | "right";
   once?: boolean;
-  margin?: string;
+  margin?: MarginValue;
 };
 
 export function ScrollReveal({

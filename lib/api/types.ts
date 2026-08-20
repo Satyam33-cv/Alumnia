@@ -1,13 +1,15 @@
-import type { Alumni, Job } from "@/lib/mock-data";
-
 export type { Alumni, AlumniId, EventItem, Job, Announcement, Story, Notification, ChatThread, MentorshipRequest } from "@/lib/mock-data";
 
 export type User = {
   id: string;
   name: string;
   email: string;
-  role?: "member" | "admin";
-  alumni?: Alumni;
+  role?: "student" | "alumni" | "admin" | "faculty";
+  alumni?: {
+    graduationYear?: number;
+    department?: string;
+    [key: string]: unknown;
+  };
 };
 
 export type AuthSession = {
@@ -33,7 +35,7 @@ export type ReferralRequest = {
   createdAt: string;
   requester: User;
   recipient: User;
-  job?: Job;
+  job?: import("@/lib/mock-data").Job;
 };
 
 export type AdminMetrics = {

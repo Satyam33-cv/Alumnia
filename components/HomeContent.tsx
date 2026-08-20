@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { BackgroundPattern } from "@/components/ui/Layout/BackgroundPattern";
 import { ScrollReveal } from "@/components/ui/Layout/ScrollReveal";
@@ -20,18 +21,13 @@ import {
   Target,
   TrendingUp,
   Award,
-  Search,
 } from "lucide-react";
 import { useAuth } from "@/lib/context/AuthContext";
 import { recommendedAlumni, events, announcements } from "@/lib/mock-data";
 import {
   staggerContainer,
-  slideUp,
-  MotionDiv,
-  StaggerItem,
 } from "@/lib/motion";
-import { Card, Badge } from "@/components/ui";
-import { MatchRing } from "@/components/MatchRing";
+import { Card } from "@/components/ui";
 
 type QuickAction = {
   label: string;
@@ -113,8 +109,9 @@ function getDaysUntilNextEvent(): { days: number; title: string } | null {
   return { days: diff, title: next.title };
 }
 
-export function HomeContent() {
+export const HomeContent = memo(function HomeContent() {
   const { user } = useAuth();
+  if (!user) return null;
   const firstName = user.name.split(" ")[0];
   const upcomingEvent = getDaysUntilNextEvent();
 
@@ -408,9 +405,8 @@ export function HomeContent() {
             <Card className="overflow-hidden border-border">
               <div className="divide-y divide-border">
                 {recentActivity.map((activity) => (
-                  <Link
+                  <div
                     key={activity.text}
-                    href="#"
                     className="relative flex items-center gap-4 py-5 px-6 hover:bg-purple/5 transition-colors group"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple/10 text-purple group-hover:bg-purple group-hover:text-canvas transition-all duration-300">
@@ -421,7 +417,7 @@ export function HomeContent() {
                       <p className="mt-1 text-xs text-ink/50">{activity.time}</p>
                     </div>
                     <ArrowRight size={16} className="text-ink/30 group-hover:text-purple group-hover:translate-x-1 transition-all duration-300" />
-                  </Link>
+                  </div>
                 ))}
               </div>
             </Card>
@@ -532,4 +528,4 @@ export function HomeContent() {
       </div>
     </>
   );
-}
+});

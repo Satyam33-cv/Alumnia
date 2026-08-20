@@ -13,7 +13,6 @@ import {
   MapPin,
 } from "lucide-react";
 import { useDeferredValue, useMemo, useState } from "react";
-import { AlumniCard } from "@/components/AlumniCard";
 import { Card, EmptyState, ErrorState, Skeleton } from "@/components/ui";
 import { apiClient } from "@/lib/api/client";
 import { useApi } from "@/lib/hooks/useApi";
@@ -204,7 +203,11 @@ export function DirectoryContent() {
 
   return (
     <>
-      <div>
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-sage-500">
           The network
         </p>
@@ -213,7 +216,7 @@ export function DirectoryContent() {
           Search by shared interests, experience, and the places your path might
           go next.
         </p>
-      </div>
+      </motion.div>
 
       <Card padding="md" className="mt-10 max-w-3xl">
         <label

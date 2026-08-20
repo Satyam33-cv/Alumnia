@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { getSession, saveSession, clearSession } from "@/lib/auth";
+import type { AuthSession } from "@/lib/api/types";
 
 export type UserRole = "student" | "alumni" | "admin" | "faculty";
 
@@ -14,23 +16,12 @@ export type AuthUser = {
 };
 
 type AuthContextValue = {
-  user: AuthUser;
+  user: AuthUser | null;
   role: UserRole;
   setUser: (user: AuthUser) => void;
+  setSession: (session: AuthSession) => void;
   signOut: () => void;
-  login: (email: string, password: string, role?: UserRole) => void;
-  register: (name: string, email: string, password: string, role?: UserRole) => void;
-};
-
-const STORAGE_KEY = "alumnia_auth_user";
-
-const defaultUser: AuthUser = {
-  name: "Ava Mitchell",
-  email: "ava.mitchell@alumnia.edu",
-  role: "student",
-  initials: "AM",
-  classYear: "2025",
-  department: "Computer Science",
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -44,85 +35,75 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function inferRole(email: string, explicit?: UserRole): UserRole {
-  if (explicit) return explicit;
-  const value = email.toLowerCase();
-  if (value.includes("admin")) return "admin";
-  if (value.includes("faculty")) return "faculty";
-  if (value.includes("alumni") || value.includes("alum")) return "alumni";
-  return "student";
+function mapRole(apiRole?: string): UserRole {
+  switch (apiRole) {
+    case "admin":
+      return "admin";
+    case "faculty":
+      return "faculty";
+    case "alumni":
+      return "alumni";
+    default:
+      return "student";
+  }
 }
 
-function profileForRole(role: UserRole, name: string, email: string): AuthUser {
-  if (role === "alumni") {
-    return { name, email, role, initials: getInitials(name), classYear: "2018", department: "Product Design" };
-  }
-  if (role === "faculty") {
-    return { name, email, role, initials: getInitials(name), classYear: "Faculty", department: "Career Services" };
-  }
-  if (role === "admin") {
-    return { name, email, role, initials: getInitials(name), classYear: "Admin", department: "Network Operations" };
-  }
-  return { name, email, role, initials: getInitials(name), classYear: "2025", department: "Computer Science" };
+function userFromSession(session: AuthSession): AuthUser {
+  const u = session.user;
+  const role = mapRole(u.role);
+  const name = u.name || u.email.split("@")[0].replace(/[._]/g, " ");
+  return {
+    name,
+    email: u.email,
+    role,
+    initials: getInitials(name),
+    classYear: u.alumni?.graduationYear?.toString() ?? "2025",
+    department: u.alumni?.department ?? "Computer Science",
+  };
 }
 
-function loadUser(): AuthUser {
-  if (typeof window === "undefined") return defaultUser;
+function loadSessionUser(): AuthUser | null {
+  const session = getSession();
+  if (!session) return null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultUser;
-    return JSON.parse(raw) as AuthUser;
+    return userFromSession(session);
   } catch {
-    return defaultUser;
+    return null;
   }
-}
-
-function saveUser(user: AuthUser) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-}
-
-function clearUser() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEY);
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUserState] = useState<AuthUser>(defaultUser);
+  const [user, setUserState] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUserState(loadUser());
+    setUserState(loadSessionUser());
+    setLoading(false);
   }, []);
 
   const setUser = useCallback((next: AuthUser) => {
     setUserState(next);
-    saveUser(next);
+    const session = getSession();
+    if (session) {
+      saveSession({ ...session, user: { ...session.user, name: next.name, email: next.email } });
+    }
+  }, []);
+
+  const setSession = useCallback((session: AuthSession) => {
+    saveSession(session);
+    setUserState(userFromSession(session));
   }, []);
 
   const signOut = useCallback(() => {
-    const guest: AuthUser = { ...defaultUser };
-    setUserState(guest);
-    clearUser();
+    setUserState(null);
+    clearSession();
   }, []);
 
-  const login = useCallback(
-    (email: string, _password: string, role?: UserRole) => {
-      const name = email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-      setUser(profileForRole(inferRole(email, role), name, email));
-    },
-    [setUser],
-  );
-
-  const register = useCallback(
-    (name: string, email: string, _password: string, role?: UserRole) => {
-      setUser(profileForRole(inferRole(email, role), name, email));
-    },
-    [setUser],
-  );
+  const role = user?.role ?? "student";
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, role: user.role, setUser, signOut, login, register }),
-    [user, setUser, signOut, login, register],
+    () => ({ user, role, setUser, setSession, signOut, loading }),
+    [user, role, setUser, setSession, signOut, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

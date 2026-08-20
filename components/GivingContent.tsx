@@ -218,7 +218,7 @@ export function GivingContent() {
               ))}
             </div>
             <button
-              onClick={() => handleContribute(true)}
+              onClick={() => handleContribute()}
               disabled={!selectedAmount}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-brass-500 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brass-600 disabled:cursor-not-allowed disabled:opacity-60"
             >

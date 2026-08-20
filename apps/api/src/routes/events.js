@@ -43,14 +43,19 @@ router.post('/', authenticate, requireRole(...CREATOR_ROLES), async (req, res) =
 // List events (optionally upcoming only)
 router.get('/', async (req, res) => {
   try {
-    const { upcoming } = req.query;
+    const { upcoming, page = 1, limit = 20 } = req.query;
     const where = {};
     if (upcoming === 'true') where.date = { gte: new Date() };
+
+    const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
 
     const [events, total] = await Promise.all([
       prisma.event.findMany({
         where,
         orderBy: { date: 'asc' },
+        skip, take,
         include: {
           createdBy: { select: { id: true, name: true, avatarUrl: true } },
           _count: { select: { rsvps: true } },
@@ -59,7 +64,10 @@ router.get('/', async (req, res) => {
       prisma.event.count({ where }),
     ]);
 
-    res.json({ events, count: total });
+    res.json({
+      events,
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
+    });
   } catch (err) {
     console.error('GET /events error:', err);
     res.status(500).json({ error: 'Failed to fetch events' });
@@ -101,9 +109,37 @@ router.post('/:id/rsvp', authenticate, async (req, res) => {
     }
 
     if (event.maxCapacity) {
-      const count = await prisma.eventRSVP.count({ where: { eventId: event.id } });
-      if (count >= event.maxCapacity) {
-        return res.status(400).json({ error: 'Event is full' });
+      try {
+        const rsvp = await prisma.$transaction(async (tx) => {
+          const count = await tx.eventRSVP.count({ where: { eventId: event.id } });
+          if (count >= event.maxCapacity) {
+            throw new Error('EVENT_FULL');
+          }
+          return tx.eventRSVP.create({
+            data: { eventId: event.id, userId: req.user.id },
+            include: { event: { select: { id: true, title: true, date: true } } },
+          });
+        });
+
+        if (event.createdById !== req.user.id) {
+          await notify({
+            userId: event.createdById,
+            type: 'GENERAL',
+            title: '📅 New RSVP',
+            message: `A student RSVP'd to "${event.title}"`,
+            link: `/events/${event.id}`,
+          });
+        }
+
+        return res.status(201).json({ rsvp });
+      } catch (err) {
+        if (err.message === 'EVENT_FULL') {
+          return res.status(400).json({ error: 'Event is full' });
+        }
+        if (err.code === 'P2002') {
+          return res.status(409).json({ error: 'You already RSVP\'d to this event' });
+        }
+        throw err;
       }
     }
 

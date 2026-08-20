@@ -10,8 +10,9 @@ const { authenticate } = require('../middleware/auth');
 router.get('/', authenticate, async (req, res) => {
   try {
     const { page = 1, limit = 30 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
+    const take = Math.min(Math.max(parseInt(limit) || 30, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
 
     const where = { userId: req.user.id };
     const [notifications, total, unreadCount] = await Promise.all([
@@ -23,7 +24,7 @@ router.get('/', authenticate, async (req, res) => {
     res.json({
       notifications,
       unreadCount,
-      pagination: { total, page: parseInt(page), limit: take, pages: Math.ceil(total / take) },
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
     });
   } catch (err) {
     console.error('GET /notifications error:', err);

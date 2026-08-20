@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 
 type EditorialArticleProps = {
@@ -60,12 +60,14 @@ export function EditorialArticle({ story, onApprove, onReject }: EditorialArticl
             <button
               onClick={() => onApprove?.(story.id)}
               className="rounded-full bg-sage-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-sage-500/80"
+              aria-label={`Approve story: ${story.title}`}
             >
               Approve
             </button>
             <button
               onClick={() => onReject?.(story.id)}
               className="rounded-full border border-clay-500 px-3 py-1.5 text-xs font-medium text-clay-500 transition-colors hover:bg-clay-500/5"
+              aria-label={`Reject story: ${story.title}`}
             >
               Reject
             </button>
@@ -90,12 +92,14 @@ export function EditorialArticle({ story, onApprove, onReject }: EditorialArticl
             <button
               onClick={() => onApprove?.(story.id)}
               className="rounded-full bg-sage-500 px-4 py-2 text-sm font-medium text-white"
+              aria-label={`Approve story: ${story.title}`}
             >
               Approve
             </button>
             <button
               onClick={() => onReject?.(story.id)}
               className="rounded-full border border-clay-500 px-4 py-2 text-sm font-medium text-clay-500"
+              aria-label={`Reject story: ${story.title}`}
             >
               Reject
             </button>

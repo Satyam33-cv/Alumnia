@@ -117,7 +117,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.06, duration: 0.35, ease: "easeOut" },
+    transition: { delay: i * 0.06, duration: 0.35, ease: "easeOut" as const },
   }),
 };
 
@@ -184,12 +184,14 @@ export function RequestsContent() {
                   <button
                     onClick={() => handleStatusChange(req.id, "accepted")}
                     className="rounded-full bg-sage-500 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-sage-500/80"
+                    aria-label={`Accept referral from ${req.requesterName}`}
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => handleStatusChange(req.id, "rejected")}
                     className="rounded-full bg-clay-500 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-clay-500/80"
+                    aria-label={`Reject referral from ${req.requesterName}`}
                   >
                     Reject
                   </button>

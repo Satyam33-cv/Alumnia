@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 type BackgroundPatternProps = {
   className?: string;
   speed?: number;
@@ -23,36 +21,18 @@ export function BackgroundPattern({
   color = "brass",
   children,
 }: BackgroundPatternProps) {
-  const [phase, setPhase] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPhase((prev) => prev + 0.01);
-    }, 16);
-    return () => clearInterval(interval);
-  }, []);
-
   const primaryColor = colorMap[color] || colorMap.brass;
-
-  const bgStyle = {
-    background: `linear-gradient(135deg, ${primaryColor} 25%, transparent 25%), linear-gradient(225deg, ${primaryColor} 25%, transparent 25%), linear-gradient(315deg, ${primaryColor} 25%, transparent 25%), linear-gradient(45deg, ${primaryColor} 25%, transparent 25%)`,
-    backgroundSize: "50px 50px",
-    animation: `pattern-shift ${speed}s linear infinite`,
-  };
 
   return (
     <div
       className={className || "min-h-[400px] relative overflow-hidden"}
-      style={bgStyle}
+      style={{
+        background: `linear-gradient(135deg, ${primaryColor} 25%, transparent 25%), linear-gradient(225deg, ${primaryColor} 25%, transparent 25%), linear-gradient(315deg, ${primaryColor} 25%, transparent 25%), linear-gradient(45deg, ${primaryColor} 25%, transparent 25%)`,
+        backgroundSize: "50px 50px",
+        animation: `pattern-shift ${speed}s linear infinite`,
+      }}
     >
       {children}
     </div>
   );
 }
-
-export const patternCss = `
-  @keyframes pattern-shift {
-    0% { background-position: 0px 0px; }
-    100% { background-position: -50px -50px; }
-  }
-`;

@@ -1,40 +1,105 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { LoginForm } from "@/components/LoginForm";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Sign In | AlumniConnect",
-  description: "Alumni network sign in - enter your credentials to access your account",
-  openGraph: {
-    title: "Sign In - AlumniConnect",
-    description: "Alumni network sign in - enter your credentials to access your account",
-    images: ["https://alumni-connect.example.com/og-login.png"],
-  },
-  twitter: {
-    title: "Sign In - AlumniConnect",
-    description: "Alumni network sign in - enter your credentials to access your account",
-    card: "summary_large_image",
-  },
-};
+import { useState } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LoginPage() {
-	return (
-		<main className="grid min-h-screen lg:grid-cols-[.8fr_1.2fr]">
-			<section className="hidden bg-ink-900 p-10 text-paper-50 lg:flex lg:flex-col lg:justify-between">
-				<Link href="/" className="font-display text-2xl">alumni<span className="text-brass-500">connect</span></Link>
-				<div><p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-brass-500">Welcome back</p><h1 className="max-w-md font-display text-6xl leading-[.95]">Your next connection is waiting.</h1></div>
-				<p className="font-mono text-[10px] uppercase tracking-wider text-paper-50/35">AlumniConnect / member portal</p>
-			</section>
-			<section className="flex items-center justify-center px-6 py-14">
-				<div className="w-full max-w-md">
-					<Link href="/" className="mb-16 inline-flex items-center gap-2 text-sm text-ink-900/55 hover:text-brass-500"><ArrowLeft size={16} /> Back home</Link>
-					<p className="font-mono text-xs uppercase tracking-[0.2em] text-sage-500">Member sign in</p>
-					<h2 className="mt-3 font-display text-5xl">Good to see you.</h2>
-					<LoginForm />
-					<p className="mt-8 text-sm text-ink-900/55">New here? <Link href="/register" className="font-semibold text-sage-500 underline underline-offset-4">Create an account</Link></p>
-				</div>
-			</section>
-		</main>
-	);
+  const [showPassword, setShowPassword] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  return (
+    <div className={`min-h-screen flex font-sans transition-colors duration-200 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
+      {/* Left: Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md space-y-6">
+          {/* Brand */}
+          <Link href="/" className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-500/20">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-xl tracking-tight">Alumnia</span>
+          </Link>
+
+          {/* Header */}
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold">Welcome Back</h1>
+            <p className="text-xs text-slate-500">Sign in to manage your Webhooks &amp; AI Agents</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-slate-500 mb-1 block">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="email"
+                  placeholder="admin@alumnia.io"
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${
+                    isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"
+                  }`}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-500 mb-1 block">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••••••"
+                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${
+                    isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"
+                  }`}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300" />
+                <span className="text-slate-500">Remember me</span>
+              </label>
+              <a href="#" className="text-indigo-600 font-semibold hover:underline">Forgot password?</a>
+            </div>
+            <button type="submit" className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20">
+              Sign In to Dashboard
+            </button>
+          </form>
+
+          <p className="text-xs text-center text-slate-500">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-indigo-600 font-semibold underline">Sign up</Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Right: Feature Panel */}
+      <div className="hidden lg:flex flex-1 items-center justify-center p-12 bg-indigo-600 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,#ffffff08_1px,transparent_1px),linear-gradient(-45deg,#ffffff08_1px,transparent_1px)] bg-[size:20px_20px]" />
+        <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] rounded-full bg-white/10 blur-[100px]" />
+        <div className="relative z-10 max-w-md space-y-8">
+          <blockquote className="text-xl font-medium leading-relaxed">
+            &ldquo;Alumnia bridged the gap between our graduating batch and alumni at top tech firms, making warm referrals structured and transparent.&rdquo;
+          </blockquote>
+          <p className="text-xs text-indigo-200">— University Career &amp; Placement Cell</p>
+          <div className="space-y-4">
+            {["Instant AI matching with 384-dim vectors", "Verified alumni across 40+ companies", "Skillshare-style courses for career growth"].map((f) => (
+              <div key={f} className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px]">✓</div>
+                <span className="text-sm text-indigo-100">{f}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

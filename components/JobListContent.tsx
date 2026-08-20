@@ -30,7 +30,7 @@ export function JobListContent() {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [activeChip, setActiveChip] = useState<FilterChip>("All");
-  const [jobsList, setJobsList] = useState<Job[]>(initialJobs);
+  const [jobsList] = useState<Job[]>(initialJobs);
   const [referralStates, setReferralStates] = useState<Record<string, ReferralStatus>>({});
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [modalOpen, setModalOpen] = useState(false);
@@ -96,7 +96,7 @@ export function JobListContent() {
 
   const modalJob = modalJobId ? jobsList.find((j) => j.id === modalJobId) : null;
 
-  const isAlumniOrAdmin = user.role === "alumni" || user.role === "admin";
+  const isAlumniOrAdmin = user?.role === "alumni" || user?.role === "admin";
 
   return (
     <div className="relative">
@@ -220,7 +220,7 @@ export function JobListContent() {
                       </span>
                     </div>
 
-                    {user.role === "student" && (
+                    {user?.role === "student" && (
                       <div className="mt-4 flex flex-wrap gap-3">
                         <a
                           href={`/jobs/${job.id}`}

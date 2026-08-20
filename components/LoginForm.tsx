@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { ApiError } from "@/lib/api";
-import { saveSession } from "@/lib/auth";
+import { useAuth } from "@/lib/context/AuthContext";
 import { Button, Field } from "@/components/ui";
 
 type FormValues = { email: string; password: string };
@@ -21,6 +21,7 @@ function validate(values: FormValues): FormErrors {
 
 export function LoginForm() {
   const router = useRouter();
+  const { setSession } = useAuth();
   const [values, setValues] = useState<FormValues>({ email: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [serverError, setServerError] = useState("");
@@ -36,7 +37,7 @@ export function LoginForm() {
     setIsSubmitting(true);
     try {
       const session = await apiClient.auth.login({ email: values.email.trim(), password: values.password });
-      saveSession(session);
+      setSession(session);
       router.push("/dashboard");
     } catch (error) {
       setServerError(error instanceof ApiError ? error.message : "We could not sign you in. Please try again.");

@@ -9,6 +9,16 @@ if (process.env.SENDGRID_API_KEY) {
 const FROM = process.env.EMAIL_FROM || 'Alumnia <no-reply@alumnia.local>';
 const PORTAL_URL = process.env.WEB_URL || 'http://localhost:3000';
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 async function send({ to, subject, text, html }) {
   if (!process.env.SENDGRID_API_KEY) {
     console.log(`📧 [EMAIL PLACEHOLDER] To: ${to} | Subject: ${subject}\n${text}`);
@@ -39,13 +49,14 @@ function layout(title, bodyHtml, ctaText, ctaHref) {
 
 // Welcome email for CSV-imported alumni
 async function sendWelcomeEmail({ to, name, tempPassword }) {
+  const safeName = escapeHtml(name);
   return send({
     to,
     subject: 'Welcome to Alumnia!',
     text: `Hi ${name},\n\nYour alumni account has been created.\n\nLogin at ${PORTAL_URL}\nEmail: ${to}\nTemporary password: ${tempPassword}\n\nPlease change your password after first login.`,
     html: layout('Welcome to Alumnia 👋',
-      `<p>Hi <strong>${name}</strong>, your verified alumni account is ready.</p>
-       <p><strong>Email:</strong> ${to}<br/><strong>Temporary password:</strong> <code style="background:#eef2ff;padding:2px 6px;border-radius:4px">${tempPassword}</code></p>
+      `<p>Hi <strong>${safeName}</strong>, your verified alumni account is ready.</p>
+       <p><strong>Email:</strong> ${escapeHtml(to)}<br/><strong>Temporary password:</strong> <code style="background:#eef2ff;padding:2px 6px;border-radius:4px">${escapeHtml(tempPassword)}</code></p>
        <p>Sign in and update your profile to start posting jobs, giving referrals, and mentoring students.</p>`,
       'Login to Portal', PORTAL_URL),
   });
@@ -60,36 +71,45 @@ async function sendReferralStatusEmail({ to, name, status, jobTitle, company }) 
     HIRED: '🎉 You got hired!',
     NOT_HIRED: 'Update on your referral',
   };
+  const safeName = escapeHtml(name);
+  const safeJobTitle = escapeHtml(jobTitle);
+  const safeCompany = escapeHtml(company);
   return send({
     to,
     subject: `Alumnia — ${labels[status] || 'Referral update'}`,
     text: `Hi ${name},\n\n${labels[status] || 'Your referral status changed'} for ${jobTitle} at ${company}.\nTrack it at ${PORTAL_URL}/referrals/me`,
     html: layout(labels[status] || 'Referral update',
-      `<p>Hi <strong>${name}</strong>,</p><p>${labels[status] || 'Your referral status changed'} for <strong>${jobTitle}</strong> at <strong>${company}</strong>.</p>`,
+      `<p>Hi <strong>${safeName}</strong>,</p><p>${labels[status] || 'Your referral status changed'} for <strong>${safeJobTitle}</strong> at <strong>${safeCompany}</strong>.</p>`,
       'View My Referrals', `${PORTAL_URL}/referrals/me`),
   });
 }
 
 // New referral request received by alumni
 async function sendNewReferralEmail({ to, name, studentName, jobTitle, company }) {
+  const safeName = escapeHtml(name);
+  const safeStudentName = escapeHtml(studentName);
+  const safeJobTitle = escapeHtml(jobTitle);
+  const safeCompany = escapeHtml(company);
   return send({
     to,
     subject: 'You have a new referral request',
     text: `Hi ${name},\n\n${studentName} requested a referral for ${jobTitle} at ${company}.\nReview it at ${PORTAL_URL}/referrals/me`,
     html: layout('New Referral Request ✉️',
-      `<p>Hi <strong>${name}</strong>,</p><p><strong>${studentName}</strong> requested a referral for <strong>${jobTitle}</strong> at <strong>${company}</strong>.</p>`,
+      `<p>Hi <strong>${safeName}</strong>,</p><p><strong>${safeStudentName}</strong> requested a referral for <strong>${safeJobTitle}</strong> at <strong>${safeCompany}</strong>.</p>`,
       'Review Request', `${PORTAL_URL}/referrals/me`),
   });
 }
 
 // Story approved
 async function sendStoryApprovedEmail({ to, name, storyTitle }) {
+  const safeName = escapeHtml(name);
+  const safeStoryTitle = escapeHtml(storyTitle);
   return send({
     to,
     subject: 'Your success story is live!',
     text: `Hi ${name},\n\nYour story "${storyTitle}" was approved and is now on the Spotlight Wall.\nSee it at ${PORTAL_URL}/stories`,
     html: layout('Story Approved ✨',
-      `<p>Hi <strong>${name}</strong>,</p><p>Your story <em>"${storyTitle}"</em> was approved and is now live on the Spotlight Wall.</p>`,
+      `<p>Hi <strong>${safeName}</strong>,</p><p>Your story <em>"${safeStoryTitle}"</em> was approved and is now live on the Spotlight Wall.</p>`,
       'View Stories', `${PORTAL_URL}/stories`),
   });
 }

@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Sparkles,
   ArrowRight,
   Shield,
-  Briefcase,
-  Star,
   CheckCircle2,
   Zap,
   Users,
@@ -28,8 +25,6 @@ const matchData = {
 };
 
 export function HeroSection() {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[#FAFBFF]">
       {/* Background glows */}
@@ -146,8 +141,6 @@ export function HeroSection() {
 
             <div
               className="relative"
-              onMouseEnter={() => setHovered(true)}
-              onMouseLeave={() => setHovered(false)}
             >
               {/* AI Recommendation Card */}
               <div className="rounded-2xl border border-[#0F172A]/10 bg-white/90 backdrop-blur-sm shadow-2xl shadow-[#0F172A]/8 p-6 transition-all duration-300 hover:shadow-[#4F46E5]/15 hover:border-[#4F46E5]/20">
@@ -228,10 +221,10 @@ export function HeroSection() {
                 </div>
 
                 {/* CTA */}
-                <button className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-[#4F46E5] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#4F46E5]/25 transition-all hover:bg-[#4338CA] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2">
+                <Link href="/jobs" className="mt-6 w-full flex items-center justify-center gap-2 rounded-xl bg-[#4F46E5] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#4F46E5]/25 transition-all hover:bg-[#4338CA] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] focus-visible:ring-offset-2">
                   Request Referral
                   <ArrowRight className="size-4" />
-                </button>
+                </Link>
               </div>
 
               {/* Floating stat badges */}

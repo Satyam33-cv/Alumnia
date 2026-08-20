@@ -1,29 +1,38 @@
 import type { AuthSession } from "@/lib/api/types";
 
-const sessionKey = "alumni_connect_session";
-const tokenKey = "alumni_connect_token";
+const STORAGE_KEY = "alumnia_session";
+const OLD_SESSION_KEY = "alumni_connect_session";
+const OLD_TOKEN_KEY = "alumni_connect_token";
+const OLD_USER_KEY = "alumnia_auth_user";
 
 export function saveSession(session: AuthSession) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(sessionKey, JSON.stringify(session));
-  window.localStorage.setItem(tokenKey, session.token);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+  localStorage.removeItem(OLD_SESSION_KEY);
+  localStorage.removeItem(OLD_TOKEN_KEY);
+  localStorage.removeItem(OLD_USER_KEY);
 }
 
 export function getSession(): AuthSession | null {
   if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(sessionKey);
+  const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
-
   try {
     return JSON.parse(raw) as AuthSession;
   } catch {
-    window.localStorage.removeItem(sessionKey);
+    localStorage.removeItem(STORAGE_KEY);
     return null;
   }
 }
 
+export function getToken(): string | null {
+  return getSession()?.token ?? null;
+}
+
 export function clearSession() {
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(sessionKey);
-  window.localStorage.removeItem(tokenKey);
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(OLD_SESSION_KEY);
+  localStorage.removeItem(OLD_TOKEN_KEY);
+  localStorage.removeItem(OLD_USER_KEY);
 }

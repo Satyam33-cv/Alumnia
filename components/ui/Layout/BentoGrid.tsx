@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -32,14 +32,8 @@ const gridSettings: Record<string, { w: number; h: number }> = {
 };
 
 export function BentoGrid({ items, className, gutter = 12 }: BentoGridProps) {
-  const [layout, setLayout] = useState<Record<string, { x: number; y: number }>>({});
-
   useEffect(() => {
-    const initial: Record<string, { x: number; y: number }> = {};
-    items.forEach((item) => {
-      initial[item.id] = { x: 0, y: 0 };
-    });
-    setLayout(initial);
+    // Initialize positions
   }, [items]);
 
   return (

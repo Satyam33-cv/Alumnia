@@ -1,5 +1,18 @@
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { AlumniCard } from "@/components/AlumniCard";
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => "/",
+}));
+
+jest.mock("next/link", () => {
+  const React = require("react");
+  return React.forwardRef(function MockLink({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }, ref: React.Ref<HTMLAnchorElement>) {
+    return React.createElement("a", { href, ref, ...props }, children);
+  });
+});
 
 const mockAlumni = {
   id: "al-priya",
@@ -18,51 +31,39 @@ describe("AlumniCard", () => {
   });
 
   it("renders alumni initials", () => {
-    const initials = screen.getByText("PR");
-    expect(initials).toBeInTheDocument();
+    expect(screen.getByText("PR")).toBeInTheDocument();
   });
 
   it("renders alumni name", () => {
-    const name = screen.getByText("Priya Raman");
-    expect(name).toBeInTheDocument();
+    expect(screen.getByText("Priya Raman")).toBeInTheDocument();
   });
 
   it("renders batch year", () => {
-    const batch = screen.getByText("Class of 2018");
-    expect(batch).toBeInTheDocument();
+    expect(screen.getByText("Class of 2018")).toBeInTheDocument();
   });
 
   it("renders role and company", () => {
-    const roleCompany = screen.getByText("Product Designer at Northstar Labs");
-    expect(roleCompany).toBeInTheDocument();
+    expect(screen.getByText(/Product Designer/)).toBeInTheDocument();
+    expect(screen.getByText(/Northstar Labs/)).toBeInTheDocument();
   });
 
-  it("renders location with map pin", () => {
-    const location = screen.getByText("New York, NY");
-    expect(location).toBeInTheDocument();
+  it("renders location", () => {
+    expect(screen.getByText("New York, NY")).toBeInTheDocument();
   });
 
   it("renders match ring when match prop is provided", () => {
-    const matchRing = screen.getByTestId("match-ring");
-    expect(matchRing).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /match/i })).toBeInTheDocument();
   });
 
   it("does not render match ring when match is undefined", () => {
-    const { unmount } = render(
-      <AlumniCard alumni { ...mockAlumni } match={undefined} />
+    const { container } = render(
+      <AlumniCard alumni={{ ...mockAlumni, match: undefined }} />
     );
-    unmount();
-    const container = screen.getByText("Class of 2018");
-    expect(container).toBeInTheDocument();
+    expect(container.querySelector('[role="img"][aria-label*="match"]')).not.toBeInTheDocument();
   });
 
   it("links to profile page with alumni ID", () => {
     const link = screen.getByRole("link", { name: /view profile/i });
     expect(link).toHaveAttribute("href", "/directory/al-priya");
-  });
-
-  it("renders view profile link with arrow icon", () => {
-    const link = screen.getByRole("link", { name: /view profile/i });
-    expect(link).toBeInTheDocument();
   });
 });

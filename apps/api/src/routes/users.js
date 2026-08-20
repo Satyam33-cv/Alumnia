@@ -6,21 +6,9 @@ const prisma = require('../db');
 const { authenticate, requireRole } = require('../middleware/auth');
 
 // =================== GET /api/users/me ===================
-router.get('/me', authenticate, async (req, res) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: {
-        id: true, name: true, email: true, role: true, phone: true, avatarUrl: true,
-        batchYear: true, department: true, rollNumber: true,
-        currentCompany: true, jobTitle: true, location: true, linkedinUrl: true, bio: true,
-        isVerified: true, createdAt: true,
-      },
-    });
-    res.json({ user });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch user' });
-  }
+// Redirect to canonical /api/auth/me endpoint
+router.get('/me', authenticate, (req, res) => {
+  res.redirect(301, '/api/auth/me');
 });
 
 // =================== PATCH /api/users/me ===================
@@ -97,8 +85,9 @@ router.get('/alumni', async (req, res) => {
     if (company) where.currentCompany = { contains: company, mode: 'insensitive' };
     if (location) where.location = { contains: location, mode: 'insensitive' };
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
+    const take = Math.min(Math.max(parseInt(limit) || 24, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
 
     const [alumni, total] = await Promise.all([
       prisma.user.findMany({
@@ -115,7 +104,7 @@ router.get('/alumni', async (req, res) => {
 
     res.json({
       alumni,
-      pagination: { total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / take) },
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
     });
   } catch (err) {
     console.error('GET /users/alumni error:', err);

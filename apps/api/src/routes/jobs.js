@@ -67,8 +67,9 @@ router.get('/', async (req, res) => {
     if (location) where.location = { contains: location, mode: 'insensitive' };
     if (jobType) where.jobType = jobType;
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
+    const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
 
     const [jobs, total] = await Promise.all([
       prisma.jobPosting.findMany({
@@ -85,7 +86,7 @@ router.get('/', async (req, res) => {
 
     res.json({
       jobs,
-      pagination: { total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / take) },
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
     });
   } catch (err) {
     console.error('GET /jobs error:', err);

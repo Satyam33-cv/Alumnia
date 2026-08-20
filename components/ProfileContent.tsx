@@ -84,6 +84,8 @@ export function ProfileContent() {
     }
   };
 
+  if (!user) return null;
+
   return (
     <motion.div
       variants={staggerContainer}

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { AlertCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 

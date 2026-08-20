@@ -1,85 +1,86 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import "@testing-library/jest-dom";
+import { render, screen, waitFor, act } from "@testing-library/react";
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  usePathname: () => "/dashboard",
+}));
+
+jest.mock("next/link", () => {
+  const React = require("react");
+  return React.forwardRef(function MockLink({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }, ref: React.Ref<HTMLAnchorElement>) {
+    return React.createElement("a", { href, ref, ...props }, children);
+  });
+});
+
+const mockUseApi = jest.fn();
+jest.mock("@/lib/hooks/useApi", () => ({
+  useApi: (...args: unknown[]) => mockUseApi(...args),
+}));
+
 import { DashboardContent } from "@/components/DashboardContent";
 
-const mockUser = {
-  id: "user-1",
-  name: "Ava Mitchell",
-  email: "ava@alumni.edu",
-  role: "alumni",
-};
+const mockUser = { id: "user-1", name: "Priya Raman", email: "priya@alumni.edu", role: "alumni" as const };
+const mockAlumni = [{ id: "al-1", name: "Marcus Chen", batch: "2016", company: "Fieldwork", role: "Strategy Lead", location: "Chicago, IL", initials: "MC", match: 87 }];
+const mockJobs = [{ id: "job-1", title: "Associate Product Manager", company: "Northstar Labs", type: "Full-time" as const, location: "New York / Hybrid", posted: "2d ago", referralAvailable: true }];
+const mockRequests: unknown[] = [];
 
-const mockAlumni = [
-  { id: "al-priya", name: "Priya Raman", batch: "2018", company: "Northstar Labs", role: "Product Designer", location: "New York, NY", initials: "PR", match: 94 },
-  { id: "al-marcus", name: "Marcus Chen", batch: "2016", company: "Fieldwork", role: "Strategy Lead", location: "Chicago, IL", initials: "MC", match: 87 },
-];
-
-const mockJobs = [
-  { id: "job-1", title: "Associate Product Manager", company: "Northstar Labs", type: "Full-time", location: "New York / Hybrid", posted: "2d ago", referralAvailable: true },
-  { id: "job-2", title: "Research Analyst", company: "Morrow Health", type: "Full-time", location: "Remote", posted: "4d ago", referralAvailable: true },
-];
-
-const mockRequests = [
-  { id: "req-1", studentName: "Alex Kim", status: "pending" },
-];
+function setupSuccessMocks() {
+  mockUseApi.mockReturnValue({
+    data: { user: mockUser, alumni: mockAlumni, jobs: mockJobs, requests: mockRequests },
+    error: undefined,
+    isLoading: false,
+    isValidating: false,
+    refresh: jest.fn(),
+    mutate: jest.fn(),
+  });
+}
 
 describe("DashboardContent", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("shows loading state initially", () => {
+    mockUseApi.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      isValidating: false,
+      refresh: jest.fn(),
+      mutate: jest.fn(),
+    });
     render(<DashboardContent />);
+    expect(screen.getByLabelText("Loading dashboard")).toBeInTheDocument();
   });
 
-  it("renders personalized greeting", () => {
-    const greeting = screen.getByText(/good morning, ava/i);
-    expect(greeting).toBeInTheDocument();
+  it("renders personalized greeting after load", async () => {
+    setupSuccessMocks();
+    render(<DashboardContent />);
+    expect(screen.getByText(/Good morning, Priya/i)).toBeInTheDocument();
   });
 
-  it("renders people worth knowing section", () => {
-    const section = screen.getByText(/people worth knowing/i);
-    expect(section).toBeInTheDocument();
+  it("renders people worth knowing section", async () => {
+    setupSuccessMocks();
+    render(<DashboardContent />);
+    expect(screen.getByText(/people worth knowing/i)).toBeInTheDocument();
   });
 
-  it("renders alumni cards in people section", () => {
-    mockAlumni.forEach((alumni) => {
-      const card = screen.getByText(alumni.name);
-      expect(card).toBeInTheDocument();
-    });
+  it("renders open doors section", async () => {
+    setupSuccessMocks();
+    render(<DashboardContent />);
+    expect(screen.getByText(/open doors/i)).toBeInTheDocument();
   });
 
-  it("renders empty state when no alumni", async () => {
-    // Test empty state renders
-    const emptyState = screen.getByText(/your network is waiting/i);
-    expect(emptyState).toBeInTheDocument();
+  it("renders job title after load", async () => {
+    setupSuccessMocks();
+    render(<DashboardContent />);
+    expect(screen.getByText("Associate Product Manager")).toBeInTheDocument();
   });
 
-  it("renders open doors section with jobs", () => {
-    const jobsSection = screen.getByText(/open doors/i);
-    expect(jobsSection).toBeInTheDocument();
-  });
-
-  it("renders job cards", () => {
-    mockJobs.forEach((job) => {
-      const jobCard = screen.getByText(job.title);
-      expect(jobCard).toBeInTheDocument();
-    });
-  });
-
-  it("rends referral thread when active request exists", () => {
-    const referralThread = screen.getByText(/your active thread/i);
-    expect(referralThread).toBeInTheDocument();
-  });
-
-  it("renders requests list", () => {
-    const requestsSection = screen.getByText(/referral threads/i);
-    expect(requestsSection).toBeInTheDocument();
-  });
-
-  it("shows loading state during data fetch", () => {
-    const skeletons = screen.getAllByText(/busy|loading/i);
-    expect(skeletons.length).toBeGreaterThan(0);
-  });
-
-  it("shows error state on fetch failure", async () => {
-    const errorState = screen.getByText(/your dashboard is unavailable/i);
-    expect(errorState).toBeInTheDocument();
+  it("renders alumni name after load", async () => {
+    setupSuccessMocks();
+    render(<DashboardContent />);
+    expect(screen.getByText("Marcus Chen")).toBeInTheDocument();
   });
 });

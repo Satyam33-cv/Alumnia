@@ -56,14 +56,19 @@ router.get('/pending', authenticate, requireRole('ADMIN'), async (req, res) => {
 // Public list of approved stories (optionally featured only)
 router.get('/', async (req, res) => {
   try {
-    const { featured } = req.query;
+    const { featured, page = 1, limit = 20 } = req.query;
     const where = { isApproved: true };
     if (featured === 'true') where.isFeatured = true;
+
+    const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
+    const pageNum = Math.max(parseInt(page) || 1, 1);
+    const skip = (pageNum - 1) * take;
 
     const [stories, total] = await Promise.all([
       prisma.successStory.findMany({
         where,
         orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        skip, take,
         include: {
           alumni: {
             select: { id: true, name: true, currentCompany: true, jobTitle: true, avatarUrl: true, department: true },
@@ -73,7 +78,10 @@ router.get('/', async (req, res) => {
       prisma.successStory.count({ where }),
     ]);
 
-    res.json({ stories, count: total });
+    res.json({
+      stories,
+      pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
+    });
   } catch (err) {
     console.error('GET /stories error:', err);
     res.status(500).json({ error: 'Failed to fetch stories' });

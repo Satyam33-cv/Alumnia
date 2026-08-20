@@ -14,7 +14,7 @@ export function RoleGate({
 }) {
   const { user } = useAuth();
 
-  if (allow.includes(user.role)) return <>{children}</>;
+  if (user?.role && allow.includes(user.role)) return <>{children}</>;
 
   return (
     <Card padding="lg" className="mx-auto max-w-xl text-center">
