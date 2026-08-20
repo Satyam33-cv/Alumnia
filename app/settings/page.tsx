@@ -30,8 +30,8 @@ function SecretBar({ value, label }: { value: string; label?: string }) {
   const masked = `${value.substring(0, 7)}••••••••••••••••••••${value.slice(-4)}`;
 
   return (
-    <div className="p-3 rounded-xl border flex items-center justify-between font-mono text-sm bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-      <span className="truncate max-w-lg text-slate-600 dark:text-slate-300">
+    <div className="p-3 rounded-xl border flex items-center justify-between font-mono text-sm bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 gap-3">
+      <span className="truncate max-w-[180px] sm:max-w-[280px] md:max-w-md text-slate-600 dark:text-slate-300 min-w-0">
         {show ? value : masked}
       </span>
       <div className="flex items-center gap-2 shrink-0">

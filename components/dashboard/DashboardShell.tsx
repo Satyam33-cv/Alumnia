@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Bell, Search, LayoutDashboard, Users, FileText, Briefcase, CalendarDays,
   Settings, LogOut, ChevronRight, X, Search as SearchIcon, FileText as FileIcon,
-  Cpu, Globe, Database, Moon, Sun, Sparkles, HelpCircle, BookOpen, DollarSign,
+  Cpu, Globe, Database, Moon, Sun, Sparkles, HelpCircle, BookOpen, DollarSign, Menu,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -60,14 +60,29 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { theme, toggle } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const unreadCount = notifications.filter((n) => n.unread).length;
   const isDark = theme === "dark";
 
   return (
     <div className={`min-h-screen flex font-sans transition-colors duration-200 ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-800"}`}>
 
+      {/* ── MOBILE OVERLAY ── */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* ── SIDEBAR ── */}
-      <aside className={`w-64 border-r flex flex-col justify-between p-4 shrink-0 ${isDark ? "bg-slate-900/50 border-slate-800" : "bg-white border-slate-200"}`}>
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50
+        w-64 border-r flex flex-col justify-between p-4 shrink-0
+        transform transition-transform duration-200
+        ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        ${isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}
+      `}>
         <div className="space-y-6">
           {/* Brand */}
           <div className="flex items-center gap-3 px-2 py-1">
@@ -178,8 +193,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className={`h-16 flex items-center justify-between px-8 border-b shrink-0 ${isDark ? "border-slate-800" : "border-slate-200"}`}>
+        <header className={`h-16 flex items-center justify-between px-4 sm:px-6 md:px-8 border-b shrink-0 ${isDark ? "border-slate-800" : "border-slate-200"}`}>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors md:hidden"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <span className="px-2.5 py-0.5 text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 rounded-full uppercase tracking-wider">
               Workspace
             </span>
@@ -214,7 +236,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
           <div className="max-w-5xl mx-auto space-y-8">
             {children}
           </div>

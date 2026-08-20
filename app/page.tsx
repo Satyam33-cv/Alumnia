@@ -75,7 +75,7 @@ export default function LandingPage() {
               <h2 className="text-3xl font-extrabold tracking-tight">Everything you need to get referred</h2>
               <p className="text-slate-500 dark:text-slate-400">Six powerful tools working together to connect you with the right alumni.</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {capabilities.map((c, i) => (
                 <motion.div
                   key={c.title}
