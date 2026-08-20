@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/context/AuthContext";
+import { ScrollProgress } from "@/components/ui/Layout";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -30,7 +31,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${fraunces.variable} ${inter.variable} ${plexMono.variable}`}>
-      <body><AuthProvider>{children}</AuthProvider></body>
+      <body>
+        <AuthProvider>
+          <ScrollProgress color="brass" height={3} />
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

@@ -21,6 +21,7 @@ import { useApi } from "@/lib/hooks/useApi";
 import { stories } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui";
 import { BentoGrid } from "@/components/ui/Layout/BentoGrid";
+import { StickySidebar } from "@/components/ui/Layout/StickySidebar";
 
 type MetricCard = {
   label: string;
@@ -249,15 +250,17 @@ export function AdminContent() {
           </div>
         </motion.section>
 
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-          className="rounded-lg border border-ink-900/10 bg-white/70 p-6"
-        >
-          <h2 className="font-display text-2xl">Verification Queue</h2>
-          <div className="mt-5 divide-y divide-ink-900/5">
-            {verificationQueue.map((alumni, i) => (
+        <StickySidebar offsetTop={120}>
+          <div>
+            <motion.section
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="rounded-lg border border-ink-900/10 bg-white/70 p-6"
+            >
+              <h2 className="font-display text-2xl">Verification Queue</h2>
+              <div className="mt-5 divide-y divide-ink-900/5">
+                {verificationQueue.map((alumni, i) => (
               <div key={alumni.email} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-900/5 text-xs font-medium text-ink-900/70">
                   {alumni.name.split(" ").map((n) => n[0]).join("")}
@@ -321,7 +324,6 @@ export function AdminContent() {
             ))}
           </div>
         </motion.section>
-      </div>
 
       <motion.section
         initial={{ opacity: 0, y: 16 }}
@@ -369,6 +371,9 @@ export function AdminContent() {
           </div>
         </div>
       </motion.section>
+        </div>
+      </StickySidebar>
+      </div>
 
       <motion.section
         initial={{ opacity: 0, y: 16 }}
