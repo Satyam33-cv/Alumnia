@@ -27,7 +27,7 @@ export function Tabs({ className, defaultValue, value, onValueChange, children, 
           return child;
         })}
       </TabsPrimitive.List>
-      <TabsPrimitive.Content value={value || defaultValue || ""} className={cn("pt-4")}>
+      <TabsPrimitive.Content className={cn("pt-4")}>
         {children}
       </TabsPrimitive.Content>
     </TabsPrimitive.Root>
