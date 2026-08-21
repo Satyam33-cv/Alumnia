@@ -17,22 +17,30 @@ const colorMap: Record<string, string> = {
 
 export function BackgroundPattern({
   className,
-  speed = 0.5,
-  color = "brass",
+  color = "slate",
   children,
 }: BackgroundPatternProps) {
-  const primaryColor = colorMap[color] || colorMap.brass;
-
+  // We ignore `speed` since moving patterns are distracting.
+  // Use a subtle dotted grid typical in modern minimalist UI (e.g., Vercel, Linear).
   return (
-    <div
-      className={className || "min-h-[400px] relative overflow-hidden"}
-      style={{
-        background: `linear-gradient(135deg, ${primaryColor} 25%, transparent 25%), linear-gradient(225deg, ${primaryColor} 25%, transparent 25%), linear-gradient(315deg, ${primaryColor} 25%, transparent 25%), linear-gradient(45deg, ${primaryColor} 25%, transparent 25%)`,
-        backgroundSize: "50px 50px",
-        animation: `pattern-shift ${speed}s linear infinite`,
-      }}
-    >
-      {children}
+    <div className={className || "min-h-[400px] relative overflow-hidden bg-slate-50"}>
+      {/* Subtle Dot Grid */}
+      <div 
+        className="absolute inset-0 z-0 opacity-40 pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(rgba(15, 23, 42, 0.15) 1px, transparent 1px)",
+          backgroundSize: "24px 24px"
+        }}
+      />
+      {/* Top radial gradient for depth */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.7),transparent_50%)]"
+      />
+      
+      {/* Content wrapper to ensure z-index is above background */}
+      <div className="relative z-10 h-full w-full">
+        {children}
+      </div>
     </div>
   );
 }

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, Send, MessageCircle, Search, ShieldCheck, BriefcaseBusiness, GraduationCap, Clock, ChevronRight } from "lucide-react";
 import { chatThreads as mockChatThreads } from "@/lib/mock-data";
 import { apiClient } from "@/lib/api/client";
 import { useApi } from "@/lib/hooks/useApi";
+import { useAuth } from "@/lib/context/AuthContext";
 import type { Alumni } from "@/lib/api/types";
 import { ReferralThread } from "@/components/ReferralThread";
 import { Card, Badge } from "@/components/ui";
@@ -19,34 +21,13 @@ type MockMessage = {
   sent: boolean;
 };
 
-const mockConversation: Record<string, MockMessage[]> = {
-  "chat-1": [
-    { id: "m1", text: "Hey Priya! I saw your work on the Northstar redesign. Really impressive.", time: "10:02 AM", sent: true },
-    { id: "m2", text: "Thank you! It was a fun project. The team there is great.", time: "10:05 AM", sent: false },
-    { id: "m3", text: "Would you be open to doing a portfolio review sometime this week?", time: "10:07 AM", sent: true },
-    { id: "m4", text: "I'd love to help with your portfolio review!", time: "10:10 AM", sent: false },
-  ],
-  "chat-3": [
-    { id: "m1", text: "Marcus, quick question about the Fieldwork fellowship.", time: "2:30 PM", sent: true },
-    { id: "m2", text: "Sure, what's on your mind?", time: "2:35 PM", sent: false },
-    { id: "m3", text: "Is there still capacity for summer applications?", time: "2:37 AM", sent: true },
-    { id: "m4", text: "Let me know when you're free for a call", time: "2:40 PM", sent: false },
-  ],
-  "chat-5": [
-    { id: "m1", text: "Nina, have you tried the new React compiler?", time: "9:00 AM", sent: true },
-    { id: "m2", text: "Not yet at Stripe but I've been reading the docs.", time: "9:15 AM", sent: false },
-    { id: "m3", text: "Check out this React pattern", time: "9:18 AM", sent: false },
-  ],
-  "chat-2": [
-    { id: "m1", text: "When is the panel scheduled?", time: "11:00 AM", sent: true },
-    { id: "m2", text: "Elena: The recording will be shared tomorrow", time: "11:30 AM", sent: false },
-    { id: "m3", text: "Thanks, looking forward to it!", time: "11:32 AM", sent: true },
-  ],
-  "chat-4": [
-    { id: "m1", text: "Jon: I've booked the venue", time: "3:00 PM", sent: false },
-    { id: "m2", text: "Great! How many attendees are we expecting?", time: "3:05 PM", sent: true },
-    { id: "m3", text: "Around 80 people based on current RSVPs.", time: "3:08 PM", sent: false },
-  ],
+// Mock messages removed in favor of real API
+
+type ThreadMessage = {
+  id: string;
+  text: string;
+  createdAt: string;
+  sender: { id: string; name: string; avatarUrl: string | null };
 };
 
 const listItemVariants = {
@@ -79,13 +60,14 @@ const roleBadges = {
 };
 
 export function ChatContent() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("1:1");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [selectedAlumni, setSelectedAlumni] = useState<Alumni | null>(null);
   const [composeMessage, setComposeMessage] = useState("");
   const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
-  const [localThreads, setLocalThreads] = useState<Record<string, MockMessage[]>>(mockConversation);
+  const [localThreads, setLocalThreads] = useState<Record<string, MockMessage[]>>({});
   const [messageSearch, setMessageSearch] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const replyEndRef = useRef<HTMLDivElement>(null);
@@ -98,7 +80,7 @@ export function ChatContent() {
   
   const chatThreads = useMemo(() => {
     if (!chatData?.threads) return [];
-    return chatData.threads.map((t: any) => ({
+    return chatData.threads.map((t: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => ({
       id: t.id,
       name: t.name,
       isGroup: t.isGroup,
@@ -113,11 +95,11 @@ export function ChatContent() {
 
   const filtered = useMemo(
     () => {
-      let result = chatThreads.filter((t: any) => (activeTab === "Groups" ? t.isGroup : !t.isGroup));
+      let result = chatThreads.filter((t: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => (activeTab === "Groups" ? t.isGroup : !t.isGroup));
       if (messageSearch.trim()) {
         const q = messageSearch.toLowerCase();
         result = result.filter(
-          (t: any) =>
+          (t: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) =>
             t.name.toLowerCase().includes(q) ||
             t.lastMessage.toLowerCase().includes(q) ||
             (t.role && t.role.toLowerCase().includes(q))
@@ -128,13 +110,47 @@ export function ChatContent() {
     [activeTab, messageSearch, chatThreads]
   );
 
-  const totalUnread = chatThreads.reduce((sum: number, t: any) => sum + t.unread, 0);
+  const totalUnread = chatThreads.reduce((sum: number, t: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => sum + t.unread, 0);
 
   useEffect(() => {
     if (selectedId && replyEndRef.current) {
       replyEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [selectedId, localThreads]);
+
+  useEffect(() => {
+    if (!selectedId || !user) return;
+    let isActive = true;
+
+    const fetchMessages = async () => {
+      try {
+        const data = await apiClient.chat.getThread(selectedId) as { messages: ThreadMessage[] };
+        if (!isActive) return;
+        
+        const formatted = data.messages.map(m => ({
+          id: m.id,
+          text: m.text,
+          time: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          sent: m.sender.id === user.id
+        }));
+        
+        setLocalThreads(prev => ({
+          ...prev,
+          [selectedId]: formatted
+        }));
+      } catch (err) {
+        console.error("Failed to fetch thread", err);
+      }
+    };
+
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 3500);
+
+    return () => {
+      isActive = false;
+      clearInterval(interval);
+    };
+  }, [selectedId, user]);
 
   const handleSendReply = async (threadId: string) => {
     const text = replyInputs[threadId]?.trim();
@@ -549,7 +565,7 @@ export function ChatContent() {
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass text-xs font-semibold overflow-hidden">
                     {alumni.avatarUrl ? (
-                      <img src={alumni.avatarUrl} alt={alumni.name} className="h-full w-full object-cover" />
+                      <Image src={alumni.avatarUrl} alt={alumni.name} width={36} height={36} unoptimized className="h-full w-full object-cover" />
                     ) : alumni.initials || alumni.name.split(" ").map((n: string) => n[0]).join("")}
                   </div>
                   <div className="flex-1 min-w-0">

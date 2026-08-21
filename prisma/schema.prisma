@@ -66,6 +66,7 @@ model User {
   mentorshipsAsStudent Mentorship[]  @relation("StudentSide")
   chatThreads     ChatThreadMember[]
   chatMessages    ChatMessage[]
+  storyVotes      StoryVote[]
 
   @@index([batchYear])
   @@index([department])
@@ -172,11 +173,28 @@ model SuccessStory {
   isFeatured      Boolean  @default(false)
   isApproved      Boolean  @default(false)
   approvedBy      String?  // Admin user id
+  upvoteCount     Int      @default(0)
+
+  votes           StoryVote[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([isFeatured, isApproved])
+}
+
+model StoryVote {
+  id        String       @id @default(uuid())
+  storyId   String
+  story     SuccessStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime     @default(now())
+
+  @@unique([storyId, userId])
+  @@index([storyId])
+  @@index([userId])
 }
 
 // =================== NOTIFICATIONS ===================

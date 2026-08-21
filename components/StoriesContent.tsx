@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Loader2, Heart, Star, MessageSquare, ExternalLink, ChevronDown } from "lucide-react";
 import { Card, Badge } from "@/components/ui";
@@ -11,23 +12,7 @@ import { fadeIn, slideUp, staggerContainer } from "@/lib/motion";
 
 type Filter = "published" | "all";
 
-const mockUpvotes: Record<string, number> = {
-  "story-1": 234,
-  "story-2": 189,
-  "story-3": 156,
-  "story-4": 98,
-  "story-5": 76,
-};
-
-const mockCelebrates: Record<string, number> = {
-  "story-1": 45,
-  "story-2": 32,
-  "story-3": 28,
-  "story-4": 15,
-  "story-5": 12,
-};
-
-const mockUserVotes: Record<string, "up" | "celebrate" | null> = {};
+// Mock data removed in favor of real API
 
 export function StoriesContent() {
   const [filter, setFilter] = useState<Filter>("published");
@@ -37,10 +22,9 @@ export function StoriesContent() {
   const [story, setStory] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [userVotes, setUserVotes] = useState<Record<string, "up" | "celebrate" | null>>(mockUserVotes);
 
   const { data: apiStories, mutate: mutateStories } = useApi("stories:list", () => apiClient.stories.list());
-  const allStories = apiStories || [];
+  const allStories = (apiStories || []) as any[];
 
   const filtered =
     filter === "published"
@@ -71,28 +55,39 @@ export function StoriesContent() {
       });
   };
 
-  const handleUpvote = (storyId: string) => {
-    setUserVotes((prev) => {
-      const current = prev[storyId];
-      if (current === "up") return prev;
-      return { ...prev, [storyId]: "up" };
-    });
-    showToast("Upvoted!");
+  const handleUpvote = async (storyId: string) => {
+    // Optimistic UI
+    mutateStories(allStories.map(s => {
+      if (s.id !== storyId) return s;
+      const isUpvoting = !s.hasVoted;
+      return {
+        ...s,
+        hasVoted: isUpvoting,
+        upvoteCount: (s.upvoteCount || 0) + (isUpvoting ? 1 : -1)
+      };
+    }), false);
+
+    try {
+      const res = await apiClient.stories.vote(storyId);
+      if (res.hasVoted) showToast("Upvoted!");
+      else showToast("Vote removed");
+      // Background revalidate to ensure accuracy
+      mutateStories();
+    } catch (err) {
+      console.error(err);
+      mutateStories(); // Revert on failure
+      showToast("Failed to vote");
+    }
   };
 
   const handleCelebrate = (storyId: string) => {
-    setUserVotes((prev) => {
-      const current = prev[storyId];
-      if (current === "celebrate") return prev;
-      return { ...prev, [storyId]: "celebrate" };
-    });
     showToast("Celebrated! 🎉");
   };
 
-  const upvoteCount = (storyId: string) => (mockUpvotes[storyId] || 0) + (userVotes[storyId] === "up" ? 1 : 0);
-  const celebrateCount = (storyId: string) => (mockCelebrates[storyId] || 0) + (userVotes[storyId] === "celebrate" ? 1 : 0);
-  const isUpvoted = (storyId: string) => userVotes[storyId] === "up";
-  const isCelebrated = (storyId: string) => userVotes[storyId] === "celebrate";
+  const upvoteCount = (story: any) => story.upvoteCount || 0;
+  const celebrateCount = (story: any) => 0; // Mocked for now
+  const isUpvoted = (story: any) => Boolean(story.hasVoted);
+  const isCelebrated = (story: any) => false;
 
   return (
     <motion.div
@@ -146,10 +141,10 @@ export function StoriesContent() {
             onToggle={() =>
               setExpandedId(expandedId === s.id ? null : s.id)
             }
-            upvotes={upvoteCount(s.id)}
-            celebrates={celebrateCount(s.id)}
-            isUpvoted={isUpvoted(s.id)}
-            isCelebrated={isCelebrated(s.id)}
+            upvotes={upvoteCount(s)}
+            celebrates={celebrateCount(s)}
+            isUpvoted={isUpvoted(s)}
+            isCelebrated={isCelebrated(s)}
             onUpvote={() => handleUpvote(s.id)}
             onCelebrate={() => handleCelebrate(s.id)}
           />
@@ -299,7 +294,7 @@ function StoryCard({
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage/15 text-xs font-semibold text-sage overflow-hidden">
               {s.avatarUrl ? (
-                <img src={s.avatarUrl} alt={s.author} className="h-full w-full object-cover" />
+                <Image src={s.avatarUrl} alt={s.author} width={36} height={36} unoptimized className="h-full w-full object-cover" />
               ) : s.authorInitials || s.author?.split(" ").map((n: string) => n[0]).join("")}
             </div>
             <div>

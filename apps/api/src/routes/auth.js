@@ -6,8 +6,44 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const prisma = require('../db');
 const { authenticate, JWT_SECRET } = require('../middleware/auth');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const crypto = require('crypto');
 
 const PUBLIC_VALID_ROLES = ['ALUMNI', 'STUDENT', 'FACULTY'];
+
+router.use(passport.initialize());
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_id',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
+    callbackURL: "/api/auth/google/callback"
+  },
+  async function(accessToken, refreshToken, profile, cb) {
+    try {
+      const email = profile.emails[0].value.toLowerCase();
+      let user = await prisma.user.findUnique({ where: { email } });
+      
+      if (!user) {
+        const randomPassword = crypto.randomBytes(16).toString('hex');
+        const passwordHash = await bcrypt.hash(randomPassword, 10);
+        user = await prisma.user.create({
+          data: {
+            name: profile.displayName,
+            email,
+            passwordHash,
+            role: 'STUDENT',
+            avatarUrl: profile.photos?.[0]?.value,
+            isVerified: true,
+          }
+        });
+      }
+      return cb(null, user);
+    } catch (err) {
+      return cb(err, null);
+    }
+  }
+));
 
 // =================== POST /api/auth/register ===================
 router.post('/register', async (req, res) => {
@@ -22,8 +58,11 @@ router.post('/register', async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'name, email, password are required' });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+    if (!/\d/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one number' });
     }
     if (!PUBLIC_VALID_ROLES.includes(role)) {
       return res.status(400).json({ error: 'Invalid role. Allowed: ALUMNI, STUDENT, FACULTY' });
@@ -108,6 +147,21 @@ router.get('/me', authenticate, async (req, res) => {
     console.error('GET /auth/me error:', err);
     res.status(500).json({ error: 'Failed to fetch user' });
   }
+});
+
+// =================== GET /api/auth/google ===================
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+
+// =================== GET /api/auth/google/callback ===================
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), (req, res) => {
+  const token = jwt.sign(
+    { id: req.user.id, email: req.user.email, role: req.user.role },
+    JWT_SECRET,
+    { expiresIn: '7d' },
+  );
+  
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
 });
 
 module.exports = router;

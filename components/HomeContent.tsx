@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { memo } from "react";
 import { motion } from "framer-motion";
 import { BackgroundPattern } from "@/components/ui/Layout/BackgroundPattern";
@@ -137,7 +138,7 @@ export const HomeContent = memo(function HomeContent() {
     <>
       {/* Enhanced Hero Section */}
       <section className="relative min-h-[50vh] flex items-center" aria-labelledby="hero-heading">
-        <BackgroundPattern color="purple" speed={20} className="absolute inset-0 opacity-30" />
+        <BackgroundPattern color="slate" className="absolute inset-0 opacity-100" />
         
         <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           {/* Welcome Header with Glassmorphism */}
@@ -146,10 +147,10 @@ export const HomeContent = memo(function HomeContent() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="inline-flex items-center gap-2 rounded-full bg-purple/10 px-4 py-2 mb-6 border border-purple/20"
+              className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 mb-6 border border-blue-100 shadow-sm"
             >
-              <Sparkles className="size-4 text-purple" />
-              <span className="font-mono text-xs uppercase tracking-[0.2em] text-purple/80 font-medium">
+              <Sparkles className="size-4 text-blue-600" />
+              <span className="text-xs tracking-wide text-blue-700 font-medium uppercase">
                 Welcome back, {firstName}
               </span>
             </motion.div>
@@ -159,20 +160,17 @@ export const HomeContent = memo(function HomeContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="font-heading text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight text-ink"
+              className="text-5xl sm:text-6xl font-semibold tracking-tight text-slate-900"
             >
               Ready to grow your{" "}
-              <span className="relative">
-                network
-                <span className="absolute bottom-2 left-0 right-0 h-3 bg-purple/30 -z-10" />
-              </span>
+              <span className="text-blue-600">network</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="mt-6 text-lg sm:text-xl text-ink/60 max-w-2xl mx-auto leading-relaxed"
+              className="mt-6 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed"
             >
               Class of {user.classYear} · {user.department} — Discover opportunities, connect with mentors, and give back to your community.
             </motion.p>
@@ -191,22 +189,21 @@ export const HomeContent = memo(function HomeContent() {
                 >
                   <Card
                     padding="md"
-                    className="relative overflow-hidden border-border bg-white/80 backdrop-blur-sm hover:border-purple/30 hover:bg-white transition-all duration-300"
+                    className="relative overflow-hidden border border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md transition-all duration-300"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple/10 text-purple group-hover:bg-purple group-hover:text-canvas transition-all duration-300">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-600 transition-all duration-300">
                         <stat.icon size={20} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-heading text-2xl sm:text-3xl font-semibold text-ink leading-tight">
+                        <p className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-tight">
                           {stat.value}
                         </p>
-                        <p className="font-mono text-[10px] uppercase tracking-wider text-ink/45 mt-0.5">
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mt-0.5">
                           {stat.label}
                         </p>
                       </div>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </Card>
                 </motion.div>
               ))}
@@ -218,14 +215,14 @@ export const HomeContent = memo(function HomeContent() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/jobs"
-                className="group inline-flex items-center gap-2 rounded-full bg-purple px-8 py-4 text-base font-semibold text-canvas transition-all duration-300 hover:bg-ink hover:shadow-[0_8px_30px_rgba(99,102,241,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple focus-visible:ring-offset-2"
+                className="group inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:bg-blue-700 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
               >
                 Explore Opportunities
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/mentorship"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-border bg-canvas px-8 py-4 text-base font-semibold text-ink transition-all duration-300 hover:border-purple hover:bg-purple/5 hover:text-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple focus-visible:ring-offset-2"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-4 text-base font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
               >
                 Find a Mentor
               </Link>
@@ -243,9 +240,8 @@ export const HomeContent = memo(function HomeContent() {
               >
                 <Card
                   padding="lg"
-                  className="relative border-border bg-gradient-to-br from-purple/5 via-white to-blue/5"
+                  className="relative border border-blue-100 bg-blue-50/50"
                 >
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple/10 via-transparent to-transparent" />
                   <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                     <div className="flex items-center gap-5">
                       <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-purple/10">
@@ -376,7 +372,7 @@ export const HomeContent = memo(function HomeContent() {
                     <div className="relative flex items-center gap-3">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple/10 text-purple text-base font-semibold group-hover:bg-purple group-hover:text-canvas transition-all duration-300">
                         {alumni.avatarUrl ? (
-                          <img src={alumni.avatarUrl} alt={alumni.name} className="h-full w-full rounded-xl object-cover" />
+                          <Image src={alumni.avatarUrl} alt={alumni.name} width={48} height={48} unoptimized className="h-full w-full rounded-xl object-cover" />
                         ) : alumni.initials || alumni.name.split(" ").map((n: string) => n[0]).join("")}
                       </div>
                       <div>

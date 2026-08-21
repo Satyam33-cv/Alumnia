@@ -64,7 +64,7 @@ export function AdminContent() {
       apiClient.events.list(),
       apiClient.stories.list(),
     ]);
-    return { stats: statsData?.stats || {}, requests, upcomingEvents, pendingStories: (stories || []).filter((s: any) => s.status === "pending" || !s.isApproved) } as any;
+    return { stats: statsData?.stats || {}, requests, upcomingEvents, pendingStories: (stories || []).filter((s: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => s.status === "pending" || !s.isApproved) } as any;
   });
 
   const statCards: MetricCard[] = apiData

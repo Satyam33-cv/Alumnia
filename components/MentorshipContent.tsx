@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, ChevronDown, ArrowRight, Send, Star } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -150,23 +151,28 @@ export function MentorshipContent() {
   
   const requests = useMemo(() => {
     if (!mentorshipData?.mentorships) return [];
-    return mentorshipData.mentorships.map((m: any) => ({
-      id: m.id,
-      student: m.student?.name || m.mentor?.name || "Unknown",
-      role: m.student ? `${m.student.department} '${m.student.batchYear}` : m.mentor?.jobTitle || "Alumni",
-      avatar: m.student?.avatarUrl || m.mentor?.avatarUrl || "",
-      area: m.area,
-      message: m.message,
-      status: m.status.toLowerCase(),
-      time: new Date(m.createdAt).toLocaleDateString(),
-    }));
+    return mentorshipData.mentorships.map((m: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+      const studentName = m.student?.name || m.mentor?.name || "Unknown";
+      const studentInitials = studentName.split(" ").map((n: string) => n[0]).join("");
+      return {
+        id: m.id,
+        studentName,
+        studentInitials,
+        role: m.student ? `${m.student.department} '${m.student.batchYear}` : m.mentor?.jobTitle || "Alumni",
+        avatar: m.student?.avatarUrl || m.mentor?.avatarUrl || "",
+        area: m.area,
+        message: m.message,
+        status: m.status?.toLowerCase() || "pending",
+        createdAt: m.createdAt ? new Date(m.createdAt).toLocaleDateString() : "Unknown",
+        batch: m.student?.batchYear || m.mentor?.batchYear || "",
+      };
+    });
   }, [mentorshipData]);
 
   const [activeArea, setActiveArea] = useState<string>("All");
   const [selectedDate, setSelectedDate] = useState<string>("Mon");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [showChatPreview, setShowChatPreview] = useState(false);
-  const [calendarWeek, setCalendarWeek] = useState(0);
 
   const { data: topAlumniData } = useApi("mentorship:top-alumni", () => apiClient.matching.topAlumni());
   const topMatch = topAlumniData?.alumni?.[0];
@@ -175,11 +181,11 @@ export function MentorshipContent() {
     () =>
       activeArea === "All"
         ? requests
-        : requests.filter((r: any) => r.area === activeArea),
+        : requests.filter((r: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => r.area === activeArea),
     [requests, activeArea]
   );
 
-  const pendingCount = requests.filter((r: any) => r.status === "pending").length;
+  const pendingCount = requests.filter((r: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => r.status === "pending").length;
 
   const handleAccept = async (id: string) => {
     try {
@@ -231,8 +237,8 @@ export function MentorshipContent() {
             <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-start">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brass font-semibold text-ink overflow-hidden">
                 {topMatch.avatarUrl ? (
-                  <img src={topMatch.avatarUrl} alt={topMatch.name} className="h-full w-full object-cover" />
-                ) : (topMatch.initials || topMatch.name.split(" ").map((n: string) => n[0]).join(""))}
+                  <Image src={topMatch.avatarUrl} alt={topMatch.name || "Match"} width={64} height={64} unoptimized className="h-full w-full object-cover" />
+                ) : (topMatch.initials || (topMatch.name ? topMatch.name.split(" ").map((n: string) => n[0]).join("") : "?"))}
               </div>
               <div className="flex-1">
                 <h2 className="font-display text-2xl text-paper">{topMatch.name}</h2>
@@ -406,7 +412,7 @@ export function MentorshipContent() {
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brass/15 text-brass font-semibold text-sm overflow-hidden">
                       {topMatch?.avatarUrl ? (
-                        <img src={topMatch.avatarUrl} alt={topMatch.name} className="h-full w-full object-cover" />
+                        <Image src={topMatch.avatarUrl} alt={topMatch.name} width={40} height={40} unoptimized className="h-full w-full object-cover" />
                       ) : (topMatch?.initials || (topMatch?.name ? topMatch.name.split(" ").map((n: string) => n[0]).join("") : "?"))}
                     </div>
                     <div>

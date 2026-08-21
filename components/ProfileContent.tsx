@@ -25,6 +25,7 @@ import {
 import { useAuth } from "@/lib/context/AuthContext";
 import { Card, Badge } from "@/components/ui";
 import { fadeIn, slideUp, staggerContainer } from "@/lib/motion";
+import { apiClient } from "@/lib/api/client";
 
 const timelineEntries = [
   {
@@ -90,6 +91,7 @@ export function ProfileContent() {
   const [skills, setSkills] = useState<string[]>(DEFAULT_SKILLS);
   const [newSkill, setNewSkill] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => {
@@ -123,14 +125,30 @@ export function ProfileContent() {
     setDragOver(false);
   };
 
+  const uploadResume = async (file: File) => {
+    try {
+      setUploadingResume(true);
+      setResumeFile(file);
+      setResumePreview(file.name);
+      const { url } = await apiClient.uploads.resume(file);
+      await apiClient.users.updateProfile({ resumeUrl: url });
+      showToast("Resume uploaded successfully!");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to upload resume");
+      setResumeFile(null);
+      setResumePreview(null);
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file && file.type === "application/pdf") {
-      setResumeFile(file);
-      setResumePreview(file.name);
-      showToast("Resume uploaded!");
+      uploadResume(file);
     } else if (file) {
       showToast("Please upload a PDF file");
     }
@@ -139,9 +157,7 @@ export function ProfileContent() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type === "application/pdf") {
-      setResumeFile(file);
-      setResumePreview(file.name);
-      showToast("Resume uploaded!");
+      uploadResume(file);
     } else if (file) {
       showToast("Please upload a PDF file");
     }
@@ -291,7 +307,12 @@ export function ProfileContent() {
               }`}
             >
               <Upload size={24} className="text-ink/35" />
-              {resumePreview ? (
+              {uploadingResume ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 size={20} className="animate-spin text-brass" />
+                  <span className="text-sm text-ink/70">Uploading...</span>
+                </div>
+              ) : resumePreview ? (
                 <div className="flex items-center gap-2 text-sm text-ink/65">
                   <FileText size={14} />
                   <span>{resumePreview}</span>

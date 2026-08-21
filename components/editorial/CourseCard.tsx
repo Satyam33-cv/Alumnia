@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Clock, Users, Star, BookOpen } from "lucide-react";
+import Image from "next/image";
 import { FadeUp } from "@/components/ui/SplitText";
 
 type CourseCardProps = {
@@ -49,11 +50,12 @@ export function CourseCard({
         {/* Thumbnail */}
         <div className="relative h-44 bg-gradient-to-br from-editorial-ink via-editorial-ink/90 to-editorial-ink/70 overflow-hidden">
           {thumbnail ? (
-            <img
+            <Image
               src={thumbnail}
               alt={title}
+              fill
               className="absolute inset-0 h-full w-full object-cover"
-              loading="lazy"
+              unoptimized
             />
           ) : (
             <div className="absolute inset-0 bg-[linear-gradient(45deg,#00FF8420_1px,transparent_1px),linear-gradient(-45deg,#FF6B5220_1px,transparent_1px)] bg-[size:16px_16px]" />

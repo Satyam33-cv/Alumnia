@@ -103,17 +103,17 @@ function getNavClasses(
 ) {
   if (activeVariant === "primary") {
     return isActive
-      ? "bg-brass text-canvas"
-      : "text-canvas/60 hover:bg-canvas/5 transition-colors";
+      ? "bg-blue-50 text-blue-700 font-medium"
+      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors";
   }
   if (activeVariant === "secondary") {
     return isActive
-      ? "bg-sage text-canvas"
-      : "text-canvas/60 hover:bg-canvas/5 transition-colors";
+      ? "bg-emerald-50 text-emerald-700 font-medium"
+      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors";
   }
   return isActive
-    ? "border-b-2 border-brass"
-    : "hover:text-ink border-b-2 border-transparent transition-colors";
+    ? "border-b-2 border-blue-600"
+    : "hover:text-slate-900 border-b-2 border-transparent transition-colors";
 }
 
 function NotificationPanel({
@@ -327,6 +327,15 @@ export function RoleShell({
     setNotificationsOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [loading, user, router]);
+
+  if (loading) return null;
+  if (!user) return null;
+
   function handleSignOut() {
     signOut();
     router.push("/login");
@@ -348,20 +357,20 @@ export function RoleShell({
     }`;
     return (
       <>
-        <div className={`flex items-center justify-between ${compact ? "justify-center px-2" : "px-6"} pb-6`}>
-          {compact ? (
-            <Link
-              href="/home"
-              aria-label="Alumnia home"
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-brass font-heading text-lg font-extrabold tracking-tight text-canvas"
-            >
-              A
+      <div className={`flex items-center justify-between ${compact ? "justify-center px-2" : "px-6"} pb-6`}>
+        {compact ? (
+          <Link
+            href="/home"
+            aria-label="Alumnia home"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-heading text-lg font-extrabold tracking-tight text-white shadow-sm"
+          >
+            A
+          </Link>
+        ) : (
+          <>
+            <Link href="/home" className="font-heading text-2xl tracking-tight text-slate-900">
+              alumni<span className="text-blue-600">connect</span>
             </Link>
-          ) : (
-            <>
-              <Link href="/home" className="font-heading text-2xl tracking-tight text-canvas">
-                alumni<span className="text-brass">connect</span>
-              </Link>
               {mobile && (
                 <button
                   type="button"
@@ -376,25 +385,25 @@ export function RoleShell({
           )}
         </div>
 
-        <div className={`flex items-center gap-3 border-b border-canvas/15 pb-6 ${compact ? "justify-center border-b-0 px-2" : "px-6"}`}>
-          <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brass text-sm font-semibold text-canvas ${
-              compact ? "mx-auto" : ""
-            }`}
-          >
-            {displayInitials}
-          </div>
-          {!compact && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-canvas">
-                {displayName}
-              </p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-canvas/45">
-                {displayRole} · {displayYear}
-              </p>
-            </div>
-          )}
+      <div className={`flex items-center gap-3 border-b border-slate-100 pb-6 ${compact ? "justify-center border-b-0 px-2" : "px-6"}`}>
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-sm ${
+            compact ? "mx-auto" : ""
+          }`}
+        >
+          {displayInitials}
         </div>
+        {!compact && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-slate-900">
+              {displayName}
+            </p>
+            <p className="text-[11px] font-medium text-slate-500">
+              {displayRole} · {displayYear}
+            </p>
+          </div>
+        )}
+      </div>
 
         <nav
           className={`mt-6 flex-1 space-y-0.5 ${compact ? "px-2" : "px-3"}`}
@@ -419,23 +428,23 @@ export function RoleShell({
           ))}
         </nav>
 
-        <div className={`mt-2 border-t border-canvas/15 pt-4 ${compact ? "border-t-0 px-2" : "px-3"}`}>
-          <Link
-            href="/profile"
-            onClick={() => mobile && setSidebarOpen(false)}
-            aria-current={active("/profile") ? "page" : undefined}
-            title={compact ? "My Profile" : undefined}
-            className={`${itemBase} ${
-              active("/profile")
-                ? getNavClasses(true, "primary")
-                : getNavClasses(false, "primary")
-            }`}
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brass text-primary-foreground">
-              {displayInitials}
-            </div>
-            {!compact && <span className="truncate">My Profile</span>}
-          </Link>
+      <div className={`mt-2 border-t border-slate-100 pt-4 ${compact ? "border-t-0 px-2" : "px-3"}`}>
+        <Link
+          href="/profile"
+          onClick={() => mobile && setSidebarOpen(false)}
+          aria-current={active("/profile") ? "page" : undefined}
+          title={compact ? "My Profile" : undefined}
+          className={`${itemBase} ${
+            active("/profile")
+              ? getNavClasses(true, "primary")
+              : getNavClasses(false, "primary")
+          }`}
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+            {displayInitials}
+          </div>
+          {!compact && <span className="truncate">My Profile</span>}
+        </Link>
           {secondaryNav.map(({ label, href, icon: Icon }) => (
             <Link
               key={label}
@@ -455,25 +464,25 @@ export function RoleShell({
           ))}
         </div>
 
-        <div className={`mt-auto space-y-3 border-t border-canvas/15 pt-5 ${compact ? "border-t-0 px-2" : "px-6"}`}>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            title="Sign out"
-            aria-label="Sign out"
-            className={`flex items-center gap-3 py-2 text-sm text-canvas/50 hover:text-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass ${
-              compact ? "justify-center px-0" : "px-3"
-            }`}
-          >
-            <LogOut size={16} className="shrink-0" />
-            {!compact && "Sign out"}
-          </button>
-          {!compact && (
-            <p className="px-3 font-mono text-[9px] uppercase tracking-wider text-canvas/30">
-              Alumnia v1.0
-            </p>
-          )}
-        </div>
+      <div className={`mt-auto space-y-3 border-t border-slate-100 pt-5 ${compact ? "border-t-0 px-2" : "px-6"}`}>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          title="Sign out"
+          aria-label="Sign out"
+          className={`flex items-center gap-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+            compact ? "justify-center px-0" : "px-3"
+          }`}
+        >
+          <LogOut size={16} className="shrink-0" />
+          {!compact && "Sign out"}
+        </button>
+        {!compact && (
+          <p className="px-3 text-[11px] font-medium text-slate-400">
+            Alumnia v1.0
+          </p>
+        )}
+      </div>
       </>
     );
   }
@@ -489,9 +498,9 @@ export function RoleShell({
   const sidebarWidth = collapsed ? "w-[72px]" : "w-64";
 
   return (
-    <div className="min-h-screen bg-canvas text-ink">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <aside
-        className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-ink-900/10 bg-ink text-canvas md:flex ${sidebarWidth} transition-[width] duration-200`}
+        className={`fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-slate-200 bg-white text-slate-700 md:flex ${sidebarWidth} transition-[width] duration-200`}
       >
         <div className="flex h-full flex-col py-7">
           {sidebarContent(false)}
@@ -525,67 +534,67 @@ export function RoleShell({
         )}
       </AnimatePresence>
 
-      <div className={`flex min-h-screen flex-col transition-[padding] duration-200 ${collapsed ? "md:pl-[72px]" : "md:pl-64"}`}>
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-ink-900/10 bg-canvas/80 px-4 backdrop-blur-md sm:px-6">
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="rounded p-1.5 text-ink/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass md:hidden"
-            aria-label="Open navigation"
-          >
-            <Menu size={22} />
-          </button>
+    <div className={`flex min-h-screen flex-col transition-[padding] duration-200 ${collapsed ? "md:pl-[72px]" : "md:pl-64"}`}>
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur-md sm:px-6">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          className="rounded p-1.5 text-slate-500 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 md:hidden"
+          aria-label="Open navigation"
+        >
+          <Menu size={22} />
+        </button>
 
-          <button
-            type="button"
-            onClick={() => setCollapsed((v) => !v)}
-            className="hidden rounded p-1.5 text-ink/50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass md:inline-flex"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-pressed={collapsed}
-          >
-            {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-          </button>
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          className="hidden rounded p-1.5 text-slate-500 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 md:inline-flex"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-pressed={collapsed}
+        >
+          {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+        </button>
 
-          <div className="flex flex-1 items-center gap-3">
-            <Search size={18} className="shrink-0 text-ink/35" />
-            <input
-              type="search"
-              placeholder="Search people, roles, or companies"
-              className="w-full bg-transparent text-sm text-ink placeholder-ink/35 outline-none"
-              aria-label="Search"
+        <div className="flex flex-1 items-center gap-3">
+          <Search size={18} className="shrink-0 text-slate-400" />
+          <input
+            type="search"
+            placeholder="Search people, roles, or companies"
+            className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none"
+            aria-label="Search"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <RoleSwitcher currentRole={role} />
+          <div className="relative">
+            <button
+              type="button"
+              ref={notifTriggerRef}
+              onClick={() => setNotificationsOpen((v) => !v)}
+              className="relative rounded p-1.5 text-slate-500 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              aria-label="Notifications"
+              aria-expanded={notificationsOpen}
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            <NotificationPanel
+              open={notificationsOpen}
+              onClose={() => setNotificationsOpen(false)}
+              triggerRef={notifTriggerRef}
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <RoleSwitcher currentRole={role} />
-            <div className="relative">
-              <button
-                type="button"
-                ref={notifTriggerRef}
-                onClick={() => setNotificationsOpen((v) => !v)}
-                className="relative rounded p-1.5 text-ink/60 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass"
-                aria-label="Notifications"
-                aria-expanded={notificationsOpen}
-              >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-clay px-1 text-[9px] font-bold text-canvas">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-              <NotificationPanel
-                open={notificationsOpen}
-                onClose={() => setNotificationsOpen(false)}
-                triggerRef={notifTriggerRef}
-              />
-            </div>
-
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brass text-xs font-semibold text-canvas">
-              {displayInitials}
-            </div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+            {displayInitials}
           </div>
-        </header>
+        </div>
+      </header>
 
         <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10">
           {children}

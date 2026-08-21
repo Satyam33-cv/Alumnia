@@ -60,6 +60,18 @@ router.get('/', async (req, res) => {
     const where = { isApproved: true };
     if (featured === 'true') where.isFeatured = true;
 
+    // We can extract user if token provided, but authenticate is strict, so we'll optionally verify token
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const { JWT_SECRET } = require('../middleware/auth');
+        req.user = jwt.verify(token, JWT_SECRET);
+      } catch (e) {
+        // invalid token, ignore
+      }
+    }
+
     const take = Math.min(Math.max(parseInt(limit) || 20, 1), 100);
     const pageNum = Math.min(Math.max(parseInt(page) || 1, 1), 1000);
     const skip = (pageNum - 1) * take;
@@ -73,13 +85,23 @@ router.get('/', async (req, res) => {
           alumni: {
             select: { id: true, name: true, currentCompany: true, jobTitle: true, avatarUrl: true, department: true },
           },
+          votes: req.user ? {
+            where: { userId: req.user.id },
+            select: { id: true }
+          } : undefined
         },
       }),
       prisma.successStory.count({ where }),
     ]);
 
+    // Map to include hasVoted
+    const mappedStories = stories.map(s => {
+      const { votes, ...rest } = s;
+      return { ...rest, hasVoted: votes && votes.length > 0 };
+    });
+
     res.json({
-      stories,
+      stories: mappedStories,
       pagination: { total, page: pageNum, limit: take, pages: Math.ceil(total / take) },
     });
   } catch (err) {
@@ -174,6 +196,46 @@ router.patch('/:id', authenticate, async (req, res) => {
   } catch (err) {
     console.error('PATCH /stories/:id error:', err);
     res.status(500).json({ error: 'Failed to update story' });
+  }
+});
+
+// =================== POST /api/stories/:id/vote ===================
+router.post('/:id/vote', authenticate, async (req, res) => {
+  try {
+    const storyId = req.params.id;
+    const userId = req.user.id;
+
+    const story = await prisma.successStory.findUnique({ where: { id: storyId } });
+    if (!story) return res.status(404).json({ error: 'Story not found' });
+
+    const existingVote = await prisma.storyVote.findUnique({
+      where: { storyId_userId: { storyId, userId } },
+    });
+
+    if (existingVote) {
+      // Remove vote
+      await prisma.$transaction([
+        prisma.storyVote.delete({ where: { id: existingVote.id } }),
+        prisma.successStory.update({
+          where: { id: storyId },
+          data: { upvoteCount: { decrement: 1 } },
+        }),
+      ]);
+      return res.json({ message: 'Vote removed', hasVoted: false });
+    } else {
+      // Add vote
+      await prisma.$transaction([
+        prisma.storyVote.create({ data: { storyId, userId } }),
+        prisma.successStory.update({
+          where: { id: storyId },
+          data: { upvoteCount: { increment: 1 } },
+        }),
+      ]);
+      return res.json({ message: 'Vote added', hasVoted: true });
+    }
+  } catch (err) {
+    console.error('POST /stories/:id/vote error:', err);
+    res.status(500).json({ error: 'Failed to vote' });
   }
 });
 
