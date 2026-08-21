@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, ChevronDown, Calendar, Clock, MessageSquare, ArrowRight, Send, Star } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
-import { recommendedAlumni, mentorshipRequests } from "@/lib/mock-data";
-import type { MentorshipRequest } from "@/lib/mock-data";
+import { Check, X, ChevronDown, ArrowRight, Send, Star } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useApi } from "@/lib/hooks/useApi";
+import { apiClient } from "@/lib/api/client";
 import { Card } from "@/components/ui";
 import { MatchRing } from "@/components/MatchRing";
-import { ReferralThread } from "@/components/ReferralThread";
 import {
   slideUp,
   staggerContainer,
@@ -19,7 +18,6 @@ const AREAS = ["All", "Career Advice", "Interview Prep", "Entrepreneurship", "Hi
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TIME_SLOTS = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
 
-const topMatch = recommendedAlumni[0];
 
 const mockAvailability: Record<string, boolean> = {
   "Mon-09:00": true,
@@ -148,33 +146,57 @@ function RequestModal({
 
 export function MentorshipContent() {
   const [modalOpen, setModalOpen] = useState(false);
+  const { data: mentorshipData, mutate } = useApi("mentorship:list", () => apiClient.mentorship.list());
+  
+  const requests = useMemo(() => {
+    if (!mentorshipData?.mentorships) return [];
+    return mentorshipData.mentorships.map((m: any) => ({
+      id: m.id,
+      student: m.student?.name || m.mentor?.name || "Unknown",
+      role: m.student ? `${m.student.department} '${m.student.batchYear}` : m.mentor?.jobTitle || "Alumni",
+      avatar: m.student?.avatarUrl || m.mentor?.avatarUrl || "",
+      area: m.area,
+      message: m.message,
+      status: m.status.toLowerCase(),
+      time: new Date(m.createdAt).toLocaleDateString(),
+    }));
+  }, [mentorshipData]);
+
   const [activeArea, setActiveArea] = useState<string>("All");
-  const [requests, setRequests] = useState<MentorshipRequest[]>(mentorshipRequests);
   const [selectedDate, setSelectedDate] = useState<string>("Mon");
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [showChatPreview, setShowChatPreview] = useState(false);
   const [calendarWeek, setCalendarWeek] = useState(0);
 
+  const { data: topAlumniData } = useApi("mentorship:top-alumni", () => apiClient.matching.topAlumni());
+  const topMatch = topAlumniData?.alumni?.[0];
+
   const filteredRequests = useMemo(
     () =>
       activeArea === "All"
         ? requests
-        : requests.filter((r) => r.area === activeArea),
+        : requests.filter((r: any) => r.area === activeArea),
     [requests, activeArea]
   );
 
-  const pendingCount = requests.filter((r) => r.status === "pending").length;
+  const pendingCount = requests.filter((r: any) => r.status === "pending").length;
 
-  const handleAccept = (id: string) => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: "accepted" as const } : r))
-    );
+  const handleAccept = async (id: string) => {
+    try {
+      await apiClient.mentorship.updateStatus(id, "ACCEPTED");
+      mutate();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDecline = (id: string) => {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: "declined" as const } : r))
-    );
+  const handleDecline = async (id: string) => {
+    try {
+      await apiClient.mentorship.updateStatus(id, "DECLINED");
+      mutate();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleBookSlot = (day: string, slot: string) => {
@@ -203,48 +225,56 @@ export function MentorshipContent() {
       </div>
 
       <motion.div {...slideUp}>
-        <Card tone="dark" padding="lg" className="max-w-2xl">
-          <p className="text-sm font-semibold text-brass">Top Match for You</p>
-          <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-start">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brass font-semibold text-ink">
-              {topMatch.initials}
+        {topMatch ? (
+          <Card tone="dark" padding="lg" className="max-w-2xl">
+            <p className="text-sm font-semibold text-brass">Top Match for You</p>
+            <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-start">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brass font-semibold text-ink overflow-hidden">
+                {topMatch.avatarUrl ? (
+                  <img src={topMatch.avatarUrl} alt={topMatch.name} className="h-full w-full object-cover" />
+                ) : (topMatch.initials || topMatch.name.split(" ").map((n: string) => n[0]).join(""))}
+              </div>
+              <div className="flex-1">
+                <h2 className="font-display text-2xl text-paper">{topMatch.name}</h2>
+                <p className="mt-1 text-sm text-paper/70">
+                  {topMatch.jobTitle || topMatch.role} · {topMatch.currentCompany || topMatch.company}
+                </p>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-paper/45">
+                  Class of {topMatch.batchYear || topMatch.batch}
+                </p>
+              </div>
+              <div className="shrink-0">
+                <MatchRing percentage={topMatch.matchScore || topMatch.match || 0} />
+              </div>
             </div>
-            <div className="flex-1">
-              <h2 className="font-display text-2xl text-paper">{topMatch.name}</h2>
-              <p className="mt-1 text-sm text-paper/70">
-                {topMatch.role} · {topMatch.company}
-              </p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-paper/45">
-                Class of {topMatch.batch}
-              </p>
-            </div>
-            <div className="shrink-0">
-              <MatchRing percentage={topMatch.match ?? 0} />
-            </div>
-          </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            {topMatch.skills?.slice(0, 3).map((skill) => (
-              <span
-                key={skill}
-                className="rounded-full bg-paper/10 px-3 py-1 text-xs text-paper/80"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {topMatch.skills?.slice(0, 3).map((skill: string) => (
+                <span
+                  key={skill}
+                  className="rounded-full bg-paper/10 px-3 py-1 text-xs text-paper/80"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
 
-          <button
-            onClick={() => setModalOpen(true)}
-            className="mt-6 rounded-full bg-brass px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-secondaryContainer"
-          >
-            Request Mentorship
-          </button>
-        </Card>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="mt-6 rounded-full bg-brass px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-secondaryContainer"
+            >
+              Request Mentorship
+            </button>
+          </Card>
+        ) : (
+          <Card tone="dark" padding="lg" className="max-w-2xl">
+            <p className="text-sm text-paper/70">No top match found. Try updating your profile.</p>
+          </Card>
+        )}
       </motion.div>
 
       <AnimatePresence>
-        {modalOpen && (
+        {modalOpen && topMatch && (
           <RequestModal
             name={topMatch.name}
             onClose={() => setModalOpen(false)}
@@ -374,17 +404,19 @@ export function MentorshipContent() {
               <Card padding="lg" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brass/15 text-brass font-semibold text-sm">
-                      {topMatch.initials}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brass/15 text-brass font-semibold text-sm overflow-hidden">
+                      {topMatch?.avatarUrl ? (
+                        <img src={topMatch.avatarUrl} alt={topMatch.name} className="h-full w-full object-cover" />
+                      ) : (topMatch?.initials || (topMatch?.name ? topMatch.name.split(" ").map((n: string) => n[0]).join("") : "?"))}
                     </div>
                     <div>
-                      <p className="font-semibold text-ink">{topMatch.name}</p>
-                      <p className="text-xs text-ink/50">{topMatch.role} at {topMatch.company}</p>
+                      <p className="font-semibold text-ink">{topMatch?.name || "Match"}</p>
+                      <p className="text-xs text-ink/50">{topMatch?.jobTitle || topMatch?.role} at {topMatch?.currentCompany || topMatch?.company}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-sage/10 px-2 py-0.5 text-[10px] font-medium text-sage">
-                      <Star size={10} /> {topMatch.match}% Match
+                      <Star size={10} /> {topMatch?.matchScore || topMatch?.match}% Match
                     </span>
                     <button
                       onClick={() => setShowChatPreview(false)}
@@ -403,7 +435,7 @@ export function MentorshipContent() {
                     >
                       {!msg.sent && (
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass text-[10px] font-semibold">
-                          {topMatch.initials}
+                          {topMatch?.initials || (topMatch?.name ? topMatch.name.split(" ").map((n: string) => n[0]).join("") : "?")}
                         </div>
                       )}
                       <div

@@ -70,7 +70,7 @@ export function SplitText({
           >
             {word}
           </motion.span>
-          {i < words.length - 1 ? "\u00A0" : null}
+          {i < words.length - 1 ? " " : null}
         </span>
       ))}
     </MotionTag>

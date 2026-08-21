@@ -64,9 +64,9 @@ export function LearningPathCard({
   category,
   index = 0,
 }: LearningPathCardProps) {
-  const safeSteps = Math.max(1, steps);
-  const completed = Math.min(Math.max(completedSteps, 0), safeSteps);
-  const progress = Math.round((completed / safeSteps) * 100);
+  const safeSteps = Math.max(1, Math.floor(Number.isFinite(steps) ? steps : 1));
+  const completed = Math.min(Math.max(Math.floor(Number.isFinite(completedSteps) ? completedSteps : 0), 0), safeSteps);
+  const progress = safeSteps > 0 ? Math.round((completed / safeSteps) * 100) : 0;
 
   return (
     <FadeUp delay={index * 0.1}>

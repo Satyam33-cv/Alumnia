@@ -82,7 +82,8 @@ app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/matching', require('./routes/matching'));
-
+app.use('/api/chat', require('./routes/chat'));
+app.use('/api/mentorship', require('./routes/mentorship'));
 // --- Local file uploads (auth-protected) ---
 const { authenticate } = require('./middleware/auth');
 app.use('/uploads', authenticate, express.static(path.join(__dirname, 'uploads')));

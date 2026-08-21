@@ -39,7 +39,9 @@ export function CourseCard({
   tags,
   index = 0,
 }: CourseCardProps) {
-  const safeProgress = progress === undefined ? undefined : Math.min(100, Math.max(0, progress));
+  const safeProgress = progress === undefined || !Number.isFinite(progress)
+    ? undefined
+    : Math.min(100, Math.max(0, progress));
 
   return (
     <FadeUp delay={index * 0.08} className="group">

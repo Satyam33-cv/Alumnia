@@ -23,7 +23,8 @@ import {
   Award,
 } from "lucide-react";
 import { useAuth } from "@/lib/context/AuthContext";
-import { recommendedAlumni, events, announcements } from "@/lib/mock-data";
+import { apiClient } from "@/lib/api/client";
+import { useApi } from "@/lib/hooks/useApi";
 import {
   staggerContainer,
 } from "@/lib/motion";
@@ -93,26 +94,43 @@ const heroStats = [
   { value: "92%", label: "Match Rate", icon: Target },
 ];
 
-function getDaysUntilNextEvent(): { days: number; title: string } | null {
-  const now = new Date();
-  const futureEvents = events
-    .filter((e) => e.startsAt && new Date(e.startsAt) > now)
-    .sort(
-      (a, b) =>
-        new Date(a.startsAt!).getTime() - new Date(b.startsAt!).getTime()
-    );
-  if (futureEvents.length === 0) return null;
-  const next = futureEvents[0];
-  const diff = Math.ceil(
-    (new Date(next.startsAt!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  return { days: diff, title: next.title };
-}
+
 
 export const HomeContent = memo(function HomeContent() {
   const { user } = useAuth();
+  
+  const { data: eventsData } = useApi("home:events", () => apiClient.events.list());
+  const { data: alumniData } = useApi("home:alumni", () => apiClient.alumni.list(undefined, { filter: "role", value: "ALUMNI" }));
+  const { data: announcementsData } = useApi("home:announcements", () => apiClient.announcements.list());
+  const { data: topAlumniData } = useApi("home:top-alumni", () => apiClient.matching.topAlumni(), { enabled: user?.role === "student" });
+
+  const events = eventsData || [];
+  const announcements = announcementsData || [];
+  
+  // If user is student and we have top alumni matches, use those; otherwise use generic alumni list
+  const recommendedAlumni = user?.role === "student" && topAlumniData?.alumni 
+    ? topAlumniData.alumni 
+    : (alumniData || []);
+
   if (!user) return null;
   const firstName = user.name.split(" ")[0];
+
+  function getDaysUntilNextEvent(): { days: number; title: string } | null {
+    const now = new Date();
+    const futureEvents = events
+      .filter((e) => e.startsAt && new Date(e.startsAt) > now)
+      .sort(
+        (a, b) =>
+          new Date(a.startsAt!).getTime() - new Date(b.startsAt!).getTime()
+      );
+    if (futureEvents.length === 0) return null;
+    const next = futureEvents[0];
+    const diff = Math.ceil(
+      (new Date(next.startsAt!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return { days: diff, title: next.title };
+  }
+
   const upcomingEvent = getDaysUntilNextEvent();
 
   return (
@@ -357,19 +375,21 @@ export const HomeContent = memo(function HomeContent() {
                     <div className="absolute inset-0 bg-gradient-to-br from-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center gap-3">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple/10 text-purple text-base font-semibold group-hover:bg-purple group-hover:text-canvas transition-all duration-300">
-                        {alumni.initials}
+                        {alumni.avatarUrl ? (
+                          <img src={alumni.avatarUrl} alt={alumni.name} className="h-full w-full rounded-xl object-cover" />
+                        ) : alumni.initials || alumni.name.split(" ").map((n: string) => n[0]).join("")}
                       </div>
                       <div>
                         <h3 className="font-heading text-xl">{alumni.name}</h3>
                         <p className="font-mono text-[10px] uppercase tracking-wider text-ink/45">
-                          Class of {alumni.batch}
+                          Class of {alumni.batchYear || alumni.batch}
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 border-t border-border pt-4">
-                      <p className="text-sm font-medium">{alumni.role} <span className="text-ink/35">at</span> {alumni.company}</p>
+                      <p className="text-sm font-medium">{alumni.jobTitle || alumni.role} <span className="text-ink/35">at</span> {alumni.currentCompany || alumni.company}</p>
                       <p className="mt-1 flex items-center gap-1 text-xs text-ink/50">
-                        <Clock size={12} /> {alumni.location}
+                        <Clock size={12} /> {alumni.location || "Remote"}
                       </p>
                     </div>
                     <Link
@@ -455,15 +475,15 @@ export const HomeContent = memo(function HomeContent() {
                       <div className="flex-1">
                         <h3 className="font-heading text-lg">{ann.title}</h3>
                         <p className="mt-2 line-clamp-2 text-xs leading-5 text-ink/55">
-                          {ann.body}
+                          {ann.content || ann.body}
                         </p>
                         <div className="mt-3 flex items-center gap-2">
                           <span className="text-[11px] font-medium text-ink/70">
-                            {ann.author}
+                            {ann.author?.name || ann.author}
                           </span>
                           <span className="text-[10px] text-ink/35">·</span>
                           <span className="font-mono text-[10px] text-ink/40">
-                            {ann.date}
+                            {ann.createdAt ? new Date(ann.createdAt).toLocaleDateString() : ann.date}
                           </span>
                         </div>
                       </div>

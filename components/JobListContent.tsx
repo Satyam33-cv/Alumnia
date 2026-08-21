@@ -16,8 +16,9 @@ import {
 } from "lucide-react";
 import { Card, Badge } from "@/components/ui";
 import { useAuth } from "@/lib/context/AuthContext";
-import { jobs as initialJobs } from "@/lib/mock-data";
-import type { Job } from "@/lib/mock-data";
+import { useApi } from "@/lib/hooks/useApi";
+import { apiClient } from "@/lib/api/client";
+import type { Job } from "@/lib/api/types";
 import {
   fadeIn,
   slideUp,
@@ -35,7 +36,8 @@ export function JobListContent() {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [activeChip, setActiveChip] = useState<FilterChip>("All");
-  const [jobsList] = useState<Job[]>(initialJobs);
+  const { data: apiJobs } = useApi("jobs:list", () => apiClient.jobs.list());
+  const jobsList = (apiJobs || []) as Job[];
   const [referralStates, setReferralStates] = useState<Record<string, ReferralStatus>>({});
   const [bookmarks, setBookmarks] = useState<Set<string>>(new Set());
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);

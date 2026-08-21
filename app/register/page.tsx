@@ -26,8 +26,9 @@ function validate(values: FormValues, role: Role): FormErrors {
   const errors: FormErrors = {};
   if (!values.firstName.trim()) errors.firstName = "Enter your first name.";
   if (!values.lastName.trim()) errors.lastName = "Enter your last name.";
-  if (!values.email.trim()) errors.email = "Enter your email address.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = "Enter a valid email address.";
+  const email = values.email.trim();
+  if (!email) errors.email = "Enter your email address.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address.";
   if (role === "alumni" && !values.company.trim()) errors.company = "Enter your company.";
   if (values.password.length < 6) errors.password = "Use at least 6 characters.";
   if (values.confirmPassword !== values.password) errors.confirmPassword = "Passwords must match.";

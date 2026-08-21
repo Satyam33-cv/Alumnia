@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
   const [serverError, setServerError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { theme } = useTheme();
@@ -99,13 +98,6 @@ export default function LoginPage() {
               </div>
             </div>
             {serverError ? <p role="alert" className="text-xs text-red-500">{serverError}</p> : null}
-            <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="w-4 h-4 rounded border-slate-300" />
-                <span className="text-slate-500">Remember me</span>
-              </label>
-              <a href="#" onClick={(e) => e.preventDefault()} className="text-indigo-600 font-semibold hover:underline">Forgot password?</a>
-            </div>
             <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm transition-all shadow-md shadow-indigo-600/20">
               {isSubmitting ? "Signing in..." : "Sign In to Dashboard"}
             </button>

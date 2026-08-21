@@ -4,10 +4,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Loader2, Heart, Star, MessageSquare, ExternalLink, ChevronDown } from "lucide-react";
 import { Card, Badge } from "@/components/ui";
-import {
-  stories as allStories,
-  type Story,
-} from "@/lib/mock-data";
+import type { Story } from "@/lib/mock-data";
+import { useApi } from "@/lib/hooks/useApi";
+import { apiClient } from "@/lib/api/client";
 import { fadeIn, slideUp, staggerContainer } from "@/lib/motion";
 
 type Filter = "published" | "all";
@@ -40,9 +39,12 @@ export function StoriesContent() {
   const [toast, setToast] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, "up" | "celebrate" | null>>(mockUserVotes);
 
+  const { data: apiStories, mutate: mutateStories } = useApi("stories:list", () => apiClient.stories.list());
+  const allStories = apiStories || [];
+
   const filtered =
     filter === "published"
-      ? allStories.filter((s) => s.status === "published")
+      ? allStories.filter((s) => s.status === "published" || s.isApproved)
       : allStories;
 
   const showToast = (msg: string) => {
@@ -53,13 +55,20 @@ export function StoriesContent() {
   const handleSubmit = () => {
     if (!title.trim() || !story.trim()) return;
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setModalOpen(false);
-      setTitle("");
-      setStory("");
-      showToast("Story submitted for review!");
-    }, 800);
+    apiClient.stories.create({ title, story, company: "Alumnia", role: "Alumni" })
+      .then(() => {
+        setSubmitting(false);
+        setModalOpen(false);
+        setTitle("");
+        setStory("");
+        showToast("Story submitted for review!");
+        mutateStories([...allStories, { title, story, status: "pending", isApproved: false }]);
+      })
+      .catch((err) => {
+        setSubmitting(false);
+        showToast("Error submitting story.");
+        console.error(err);
+      });
   };
 
   const handleUpvote = (storyId: string) => {
@@ -248,7 +257,7 @@ function StoryCard({
   onCelebrate: () => void;
 }) {
   const borderColor =
-    s.status === "published" ? "border-l-tertiaryOnContainer" : "border-l-brass";
+    s.status === "published" || s.isApproved ? "border-l-tertiaryOnContainer" : "border-l-brass";
 
   return (
     <motion.div
@@ -288,11 +297,13 @@ function StoryCard({
         </button>
         <div className="mt-5 flex items-center justify-between border-t border-ink/10 pt-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage/15 text-xs font-semibold text-sage">
-              {s.authorInitials}
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sage/15 text-xs font-semibold text-sage overflow-hidden">
+              {s.avatarUrl ? (
+                <img src={s.avatarUrl} alt={s.author} className="h-full w-full object-cover" />
+              ) : s.authorInitials || s.author?.split(" ").map((n: string) => n[0]).join("")}
             </div>
             <div>
-              <p className="text-sm font-semibold text-ink">{s.author}</p>
+              <p className="text-sm font-semibold text-ink">{s.author || "Anonymous"}</p>
               <p className="text-xs text-ink/50">
                 {s.role} · {s.company}
               </p>

@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { useApi } from "@/lib/hooks/useApi";
-import { stories } from "@/lib/mock-data";
 import { Skeleton } from "@/components/ui";
 import { BentoGrid } from "@/components/ui/Layout/BentoGrid";
 import { StickySidebar } from "@/components/ui/Layout/StickySidebar";
@@ -48,77 +47,52 @@ type AdminApiData = {
   upcomingEvents: import("@/lib/api/types").EventItem[];
 };
 
-const pendingStories = stories.filter((s) => s.status === "pending");
 
 export function AdminContent() {
   const [verification, setVerification] = useState<Record<number, "approved" | "rejected">>({});
   const [storyModeration, setStoryModeration] = useState<Record<string, "approved" | "rejected">>({});
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-  const { data: apiData, error, isLoading } = useApi("admin:metrics", async () => {
+  const { data: apiData, error, isLoading } = useApi("admin:stats", async () => {
     const [
-      metrics,
+      statsData,
       requests,
       upcomingEvents,
+      stories,
     ] = await Promise.all([
-      apiClient.admin.metrics(),
+      apiClient.admin.stats(),
       apiClient.requests.list(),
       apiClient.events.list(),
+      apiClient.stories.list(),
     ]);
-    return { metrics, requests, upcomingEvents } as AdminApiData;
+    return { stats: statsData?.stats || {}, requests, upcomingEvents, pendingStories: (stories || []).filter((s: any) => s.status === "pending" || !s.isApproved) } as any;
   });
 
   const statCards: MetricCard[] = apiData
     ? [
-        { label: "Total Members", value: apiData.metrics.members, icon: Users },
-        { label: "Active Members", value: apiData.metrics.activeMembers, icon: Activity },
-        { label: "Open Jobs", value: apiData.metrics.openJobs, icon: BriefcaseBusiness },
-        { label: "Pending Requests", value: apiData.metrics.pendingRequests, icon: Clock },
-        { label: "Upcoming Events", value: apiData.metrics.upcomingEvents, icon: CalendarDays },
-        { label: "Verified Alumni", value: apiData.metrics.verifiedAlumni ?? 0, icon: ShieldCheck },
+        { label: "Total Members", value: apiData.stats?.users?.total || 0, icon: Users },
+        { label: "Verified Members", value: apiData.stats?.users?.verified || 0, icon: Activity },
+        { label: "Open Jobs", value: apiData.stats?.jobs?.open || 0, icon: BriefcaseBusiness },
+        { label: "Pending Requests", value: apiData.stats?.referrals?.byStatus?.pending || 0, icon: Clock },
+        { label: "Upcoming Events", value: apiData.stats?.events?.upcoming || 0, icon: CalendarDays },
+        { label: "Pending Stories", value: apiData.stats?.stories?.pending || 0, icon: ShieldCheck },
       ]
-    : [
-        { label: "Total Members", value: 1247, icon: Users },
-        { label: "Active Members", value: 892, icon: Activity },
-        { label: "Open Jobs", value: 24, icon: BriefcaseBusiness },
-        { label: "Pending Requests", value: 18, icon: Clock },
-        { label: "Upcoming Events", value: 6, icon: CalendarDays },
-        { label: "Verified Alumni", value: 456, icon: ShieldCheck },
-      ];
+    : [];
 
   const funnelBars: FunnelBar[] = apiData
     ? [
-        { label: "Pending", count: apiData.metrics.pendingRequests, color: "bg-brass" },
-        { label: "Active", count: apiData.metrics.activeMembers, color: "bg-sage" },
-        { label: "Open Jobs", count: apiData.metrics.openJobs, color: "bg-primary" },
-        { label: "Hired", count: apiData.metrics.hiredThroughReferrals ?? 0, color: "bg-tertiaryOnContainer" },
+        { label: "Pending", count: apiData.stats?.referrals?.byStatus?.pending || 0, color: "bg-brass" },
+        { label: "Accepted", count: apiData.stats?.referrals?.byStatus?.accepted || 0, color: "bg-sage" },
+        { label: "Rejected", count: apiData.stats?.referrals?.byStatus?.rejected || 0, color: "bg-clay" },
+        { label: "Referred", count: apiData.stats?.referrals?.byStatus?.referred || 0, color: "bg-primaryContainer" },
+        { label: "Hired", count: apiData.stats?.referrals?.byStatus?.hired || 0, color: "bg-tertiaryOnContainer" },
       ]
-    : [
-        { label: "Pending", count: 45, color: "bg-brass" },
-        { label: "Accepted", count: 67, color: "bg-sage" },
-        { label: "Rejected", count: 12, color: "bg-clay" },
-        { label: "Referred", count: 34, color: "bg-primaryContainer" },
-        { label: "Hired", count: 18, color: "bg-tertiaryOnContainer" },
-      ];
+    : [];
 
   const maxFunnel = Math.max(...funnelBars.map((b) => b.count));
 
-  const verificationQueue: VerificationAlumni[] = apiData
-    ? [
-        { name: "Olivia Chen", email: "olivia.chen@alumni.edu", batch: "2021" },
-        { name: "James Wright", email: "j.wright@alumni.edu", batch: "2020" },
-        { name: "Sophia Patel", email: "sophia.p@alumni.edu", batch: "2022" },
-        { name: "Marcus Lee", email: "marcus.lee@alumni.edu", batch: "2023" },
-        { name: "Ana Ruiz", email: "ana.ruiz@alumni.edu", batch: "2021" },
-        { name: "Tom NG", email: "tom.ng@alumni.edu", batch: "2020" },
-      ]
-    : [
-        { name: "Olivia Chen", email: "olivia.chen@alumni.edu", batch: "2021" },
-        { name: "James Wright", email: "j.wright@alumni.edu", batch: "2020" },
-        { name: "Sophia Patel", email: "sophia.p@alumni.edu", batch: "2022" },
-        { name: "Marcus Lee", email: "marcus.lee@alumni.edu", batch: "2023" },
-        { name: "Ana Ruiz", email: "ana.ruiz@alumni.edu", batch: "2021" },
-        { name: "Tom NG", email: "tom.ng@alumni.edu", batch: "2020" },
-      ];
+  const verificationQueue: VerificationAlumni[] = []; // Left for API implementation Phase 3
+
+  const pendingStories = apiData?.pendingStories || [];
 
   const csvErrors = [
     { name: "Row 14 — Marcus Lee", error: "Invalid email format" },
@@ -403,8 +377,7 @@ export function AdminContent() {
                         )}
                       </AnimatePresence>
                     </div>
-                  </div>
-                )}
+                  ))}
               </div>
             </div>
           </motion.section>
@@ -484,10 +457,10 @@ export function AdminContent() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{story.title}</p>
                   <p className="mt-0.5 text-xs text-ink/45">
-                    {story.author} · {story.batch} · {story.company}
+                    {apiData?.stats?.users?.total ? (story.author || "Anonymous") : story.author} · {story.batchYear || story.batch} · {story.company}
                   </p>
                   <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-ink/55">
-                    {story.excerpt}
+                    {story.story || story.excerpt}
                   </p>
                 </div>
                 <AnimatePresence mode="wait">
@@ -521,24 +494,28 @@ export function AdminContent() {
                       className="flex shrink-0 gap-2"
                     >
                       <button
-                        onClick={() =>
-                          setStoryModeration((prev) => ({
-                            ...prev,
-                            [story.id]: "approved",
-                          }))
-                        }
+                        onClick={() => {
+                          apiClient.stories.updateStatus(story.id, true).then(() => {
+                            setStoryModeration((prev) => ({
+                              ...prev,
+                              [story.id]: "approved",
+                            }))
+                          });
+                        }}
                         className="rounded-full bg-sage px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-sage/80"
                         aria-label={`Approve story: ${story.title}`}
                       >
                         Approve
                       </button>
                       <button
-                        onClick={() =>
-                          setStoryModeration((prev) => ({
-                            ...prev,
-                            [story.id]: "rejected",
-                          }))
-                        }
+                        onClick={() => {
+                          apiClient.stories.updateStatus(story.id, false).then(() => {
+                            setStoryModeration((prev) => ({
+                              ...prev,
+                              [story.id]: "rejected",
+                            }))
+                          });
+                        }}
                         className="rounded-full border border-clay px-3 py-1 text-xs font-medium text-clay transition-colors hover:bg-clay/5"
                         aria-label={`Reject story: ${story.title}`}
                       >
@@ -573,29 +550,3 @@ export function AdminContent() {
     </div>
   );
 }
-    selectedRows.forEach((i) => {
-      next[i] = "approved";
-    });
-    return next;
-  });
-  setSelectedRows(new Set());
-};
-
-const bulkReject = () => {
-  setVerification((prev) => {
-    const next = { ...prev };
-    selectedRows.forEach((i) => {
-      next[i] = "rejected";
-    });
-    return next;
-  });
-  setSelectedRows(new Set());
-};
-
-const handleRowApprove = (i: number) => {
-  setVerification((prev) => ({ ...prev, [i]: "approved" }));
-};
-
-const handleRowReject = (i: number) => {
-  setVerification((prev) => ({ ...prev, [i]: "rejected" }));
-};

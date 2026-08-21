@@ -55,4 +55,12 @@ docs/            Design review, UI plan, and per-phase records
 
 ## Status
 
-Phases 0–10 are implemented in this repository. The UI consumes a typed API layer backed by mock data; a configured backend is still required for populated API states and successful auth/data mutations.
+The platform has been fully upgraded to a full-stack production application (Phases 1-6 Full-Stack Upgrade).
+- **Frontend**: Next.js App Router UI.
+- **Backend**: Express API with Supabase PostgreSQL and Prisma ORM.
+- **AI Matching**: pgvector embeddings for smart alumni recommendations.
+
+To run the full stack locally:
+1. Ensure `DATABASE_URL` is set in `apps/api/.env`.
+2. Run `npm install` in the root.
+3. Run `npm run dev` to start both the frontend (port 3000) and backend (port 4000) concurrently.

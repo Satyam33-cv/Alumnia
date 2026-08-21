@@ -62,6 +62,10 @@ model User {
   eventsCreated   Event[]           @relation("EventsCreated")
   rsvps           EventRSVP[]
   announcements   Announcement[]    @relation("AnnouncementsPosted")
+  mentorshipsAsMentor  Mentorship[]  @relation("MentorSide")
+  mentorshipsAsStudent Mentorship[]  @relation("StudentSide")
+  chatThreads     ChatThreadMember[]
+  chatMessages    ChatMessage[]
 
   @@index([batchYear])
   @@index([department])
@@ -249,4 +253,72 @@ model Announcement {
   updatedAt   DateTime @updatedAt
 
   @@index([createdAt])
+}
+
+// =================== MENTORSHIP ===================
+enum MentorshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
+model Mentorship {
+  id              String           @id @default(uuid())
+  studentId       String
+  student         User             @relation("StudentSide", fields: [studentId], references: [id], onDelete: Cascade)
+  mentorId        String
+  mentor          User             @relation("MentorSide", fields: [mentorId], references: [id], onDelete: Cascade)
+
+  area            String           // "Career Advice", "Interview Prep", etc.
+  message         String?          @db.Text
+  status          MentorshipStatus @default(PENDING)
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([studentId, mentorId])
+  @@index([mentorId, status])
+  @@index([studentId])
+}
+
+// =================== CHAT ===================
+model ChatThread {
+  id          String             @id @default(uuid())
+  name        String?            // null for 1:1 threads
+  isGroup     Boolean            @default(false)
+
+  members     ChatThreadMember[]
+  messages    ChatMessage[]
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model ChatThreadMember {
+  id        String     @id @default(uuid())
+  threadId  String
+  thread    ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt  DateTime   @default(now())
+
+  @@unique([threadId, userId])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        String     @id @default(uuid())
+  threadId  String
+  thread    ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User       @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  text      String     @db.Text
+
+  createdAt DateTime   @default(now())
+
+  @@index([threadId, createdAt])
+  @@index([senderId])
 }

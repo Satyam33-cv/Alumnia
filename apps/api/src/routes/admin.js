@@ -155,6 +155,7 @@ router.post('/import-csv', csvImportLimiter, upload.single('file'), async (req, 
     });
 
     const imported = [];
+    const importedForEmail = [];
     const skipped = [];
     const failed = [];
     let index = 0;
@@ -191,13 +192,14 @@ router.post('/import-csv', csvImportLimiter, upload.single('file'), async (req, 
           linkedinUrl: row.linkedinUrl || row.linkedin || null,
         },
       });
-      imported.push({ name: String(name).trim(), email: emailAddress, tempPassword });
+      imported.push({ name: String(name).trim(), email: emailAddress });
+      importedForEmail.push({ name: String(name).trim(), email: emailAddress, tempPassword });
     }
 
     // Send welcome emails with each user's unique temporary credential
-    if (imported.length > 0) {
-      console.log(`📧 Sending ${imported.length} welcome email(s)`);
-      await Promise.all(imported.map((u) => email.sendWelcomeEmail({ to: u.email, name: u.name, tempPassword: u.tempPassword })));
+    if (importedForEmail.length > 0) {
+      console.log(`📧 Sending ${importedForEmail.length} welcome email(s)`);
+      await Promise.all(importedForEmail.map((u) => email.sendWelcomeEmail({ to: u.email, name: u.name, tempPassword: u.tempPassword })));
     }
 
     res.status(201).json({

@@ -2,9 +2,11 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Send, MessageCircle, Search, ShieldCheck, BriefcaseBusiness, GraduationCap, Clock } from "lucide-react";
-import { chatThreads, recommendedAlumni } from "@/lib/mock-data";
-import type { Alumni } from "@/lib/mock-data";
+import { Plus, X, Send, MessageCircle, Search, ShieldCheck, BriefcaseBusiness, GraduationCap, Clock, ChevronRight } from "lucide-react";
+import { chatThreads as mockChatThreads } from "@/lib/mock-data";
+import { apiClient } from "@/lib/api/client";
+import { useApi } from "@/lib/hooks/useApi";
+import type { Alumni } from "@/lib/api/types";
 import { ReferralThread } from "@/components/ReferralThread";
 import { Card, Badge } from "@/components/ui";
 
@@ -89,13 +91,33 @@ export function ChatContent() {
   const replyEndRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const { data: recommendedAlumniData } = useApi("chat:alumni", () => apiClient.alumni.list(undefined, { filter: "role", value: "ALUMNI" }));
+  const recommendedAlumni = recommendedAlumniData || [];
+
+  const { data: chatData, mutate: mutateThreads } = useApi("chat:threads", () => apiClient.chat.list());
+  
+  const chatThreads = useMemo(() => {
+    if (!chatData?.threads) return [];
+    return chatData.threads.map((t: any) => ({
+      id: t.id,
+      name: t.name,
+      isGroup: t.isGroup,
+      role: t.participants?.[0]?.role?.toLowerCase() || "alumni",
+      initials: t.name ? t.name.substring(0, 2).toUpperCase() : "??",
+      lastMessage: t.lastMessage || "No messages yet",
+      time: new Date(t.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      unread: t.unread || 0,
+      participants: t.participants
+    }));
+  }, [chatData]);
+
   const filtered = useMemo(
     () => {
-      let result = chatThreads.filter((t) => (activeTab === "Groups" ? t.isGroup : !t.isGroup));
+      let result = chatThreads.filter((t: any) => (activeTab === "Groups" ? t.isGroup : !t.isGroup));
       if (messageSearch.trim()) {
         const q = messageSearch.toLowerCase();
         result = result.filter(
-          (t) =>
+          (t: any) =>
             t.name.toLowerCase().includes(q) ||
             t.lastMessage.toLowerCase().includes(q) ||
             (t.role && t.role.toLowerCase().includes(q))
@@ -103,10 +125,10 @@ export function ChatContent() {
       }
       return result;
     },
-    [activeTab, messageSearch]
+    [activeTab, messageSearch, chatThreads]
   );
 
-  const totalUnread = chatThreads.reduce((sum, t) => sum + t.unread, 0);
+  const totalUnread = chatThreads.reduce((sum: number, t: any) => sum + t.unread, 0);
 
   useEffect(() => {
     if (selectedId && replyEndRef.current) {
@@ -114,9 +136,11 @@ export function ChatContent() {
     }
   }, [selectedId, localThreads]);
 
-  const handleSendReply = (threadId: string) => {
+  const handleSendReply = async (threadId: string) => {
     const text = replyInputs[threadId]?.trim();
     if (!text) return;
+    
+    // Optimistic UI
     const newMsg: MockMessage = {
       id: `local-${Date.now()}`,
       text,
@@ -128,6 +152,14 @@ export function ChatContent() {
       [threadId]: [...(prev[threadId] ?? []), newMsg],
     }));
     setReplyInputs((prev) => ({ ...prev, [threadId]: "" }));
+    
+    // API Call
+    try {
+      await apiClient.chat.sendMessage(threadId, text);
+      mutateThreads();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleComposeSend = () => {
@@ -157,7 +189,7 @@ export function ChatContent() {
   };
 
   return (
-    <>
+    <div className="w-full">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3">
           <h1 className="font-display text-3xl">Messages</h1>
@@ -340,8 +372,7 @@ export function ChatContent() {
                 })}
               </AnimatePresence>
             )}
-          )}
-        </div>
+          </motion.div>
 
         <AnimatePresence>
           {selectedId && (
@@ -516,13 +547,15 @@ export function ChatContent() {
                       : "hover:bg-paper/50"
                   }`}
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass text-xs font-semibold">
-                    {alumni.initials}
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brass/15 text-brass text-xs font-semibold overflow-hidden">
+                    {alumni.avatarUrl ? (
+                      <img src={alumni.avatarUrl} alt={alumni.name} className="h-full w-full object-cover" />
+                    ) : alumni.initials || alumni.name.split(" ").map((n: string) => n[0]).join("")}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold">{alumni.name}</p>
                     <p className="truncate text-[11px] text-ink/50">
-                      {alumni.role} at {alumni.company}
+                      {alumni.jobTitle || alumni.role} at {alumni.currentCompany || alumni.company}
                     </p>
                   </div>
                   <div
@@ -562,5 +595,6 @@ export function ChatContent() {
         </motion.div>
       )}
     </AnimatePresence>
+    </div>
   );
 }

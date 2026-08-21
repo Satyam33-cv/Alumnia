@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Inbox, ArrowRight } from "lucide-react";
 import { ReferralThread } from "@/components/ReferralThread";
+import { apiClient } from "@/lib/api/client";
+import { useApi } from "@/lib/hooks/useApi";
 
 type Status = "pending" | "accepted" | "rejected" | "referred" | "hired";
 
@@ -20,80 +22,6 @@ interface ReferralRequest {
   createdAt: string;
 }
 
-const mockRequests: ReferralRequest[] = [
-  {
-    id: "req-1",
-    requesterName: "Alex Kim",
-    requesterInitials: "AK",
-    recipientName: "Priya Raman",
-    recipientInitials: "PR",
-    jobTitle: "Associate Product Manager",
-    company: "Northstar Labs",
-    message: "I'd love to get a referral for the APM role. I have 2 years of experience in product operations.",
-    status: "pending",
-    createdAt: "2026-08-14",
-  },
-  {
-    id: "req-2",
-    requesterName: "Jordan Lee",
-    requesterInitials: "JL",
-    recipientName: "Nina Okafor",
-    recipientInitials: "NO",
-    jobTitle: "Senior Frontend Engineer",
-    company: "Stripe",
-    message: "I'm a strong React/TypeScript developer and would really appreciate a referral to the Stripe frontend team.",
-    status: "accepted",
-    createdAt: "2026-08-10",
-  },
-  {
-    id: "req-3",
-    requesterName: "Maria Santos",
-    requesterInitials: "MS",
-    recipientName: "Marcus Chen",
-    recipientInitials: "MC",
-    jobTitle: "Research Analyst",
-    company: "Morrow Health",
-    message: "I have a background in data analysis and public health. Would be grateful for a referral.",
-    status: "referred",
-    createdAt: "2026-08-05",
-  },
-  {
-    id: "req-4",
-    requesterName: "Sam Rivera",
-    requesterInitials: "SR",
-    recipientName: "Raj Patel",
-    recipientInitials: "RP",
-    jobTitle: "VP Engineering",
-    company: "Goldman Sachs",
-    message: "I'm exploring fintech leadership roles and would love your guidance and a possible referral.",
-    status: "rejected",
-    createdAt: "2026-08-02",
-  },
-  {
-    id: "req-5",
-    requesterName: "Taylor Brooks",
-    requesterInitials: "TB",
-    recipientName: "Elena Torres",
-    recipientInitials: "ET",
-    jobTitle: "Data Scientist",
-    company: "Morrow Health",
-    message: "I'm transitioning from academia to industry data science. A referral would mean a lot.",
-    status: "hired",
-    createdAt: "2026-07-20",
-  },
-  {
-    id: "req-6",
-    requesterName: "Casey Morgan",
-    requesterInitials: "CM",
-    recipientName: "Jon Bell",
-    recipientInitials: "JB",
-    jobTitle: "Community Programs Fellow",
-    company: "Fieldwork",
-    message: "I'm passionate about community-driven research. Would love to be referred for the fellowship.",
-    status: "pending",
-    createdAt: "2026-08-12",
-  },
-];
 
 const statusTabs: { label: string; value: Status | "all" }[] = [
   { label: "All", value: "all" },
@@ -123,7 +51,8 @@ const cardVariants = {
 
 export function RequestsContent() {
   const [activeTab, setActiveTab] = useState<Status | "all">("all");
-  const [requests, setRequests] = useState<ReferralRequest[]>(mockRequests);
+  const { data: apiRequests, mutate: mutateRequests } = useApi("requests:list", () => apiClient.requests.list());
+  const requests = (apiRequests || []) as ReferralRequest[];
 
   const filtered =
     activeTab === "all" ? requests : requests.filter((r) => r.status === activeTab);
@@ -139,9 +68,9 @@ export function RequestsContent() {
   const pendingForReview = requests.filter((r) => r.status === "pending");
 
   function handleStatusChange(id: string, newStatus: Status) {
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
-    );
+    apiClient.requests.updateStatus(id, newStatus).then(() => {
+      mutateRequests(requests.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
+    });
   }
 
   return (

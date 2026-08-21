@@ -79,7 +79,9 @@ export default function LandingPage() {
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    router.push(`/network?q=${encodeURIComponent(searchQuery.trim())}`);
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+    router.push(`/network?q=${encodeURIComponent(trimmed)}`);
   }
 
   return (

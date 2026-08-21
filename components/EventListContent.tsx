@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MapPin, MessageCircle } from "lucide-react";
-import { events } from "@/lib/mock-data";
+import { apiClient } from "@/lib/api/client";
+import { useApi } from "@/lib/hooks/useApi";
 
 type Category = "all" | "reunion" | "meetup" | "webinar" | "career";
 
@@ -35,13 +36,19 @@ const cardVariants = {
 
 export function EventListContent() {
   const [activeTab, setActiveTab] = useState<Category>("all");
+  const { data: apiEvents } = useApi("events:list", () => apiClient.events.list());
+  const events = apiEvents || [];
+
   const [registeredEvents, setRegisteredEvents] = useState<Record<string, boolean>>({});
-  const [attendingCounts, setAttendingCounts] = useState<Record<string, number>>(() => {
+  const [attendingCounts, setAttendingCounts] = useState<Record<string, number>>({});
+
+  // Initialize attending counts once events are loaded
+  useState(() => {
     const counts: Record<string, number> = {};
     events.forEach((e) => {
       if (e.attending != null) counts[e.id] = e.attending;
     });
-    return counts;
+    setAttendingCounts(counts);
   });
 
   const featured = events[0];

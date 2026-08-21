@@ -29,11 +29,33 @@ export const apiClient = {
     rsvp: (id: string) => apiFetch<{ attending: boolean }>({ method: "POST", url: `/events/${id}/rsvp` }),
   },
   requests: {
-    list: () => apiFetch<ReferralRequest[]>({ method: "GET", url: "/requests" }),
-    create: (jobId: string, message: string) => apiFetch<ReferralRequest>({ method: "POST", url: "/requests", data: { jobId, message } }),
-    updateStatus: (id: string, status: ReferralRequest["status"]) => apiFetch<ReferralRequest>({ method: "PATCH", url: `/requests/${id}`, data: { status } }),
+    list: () => apiFetch<ReferralRequest[]>({ method: "GET", url: "/referrals" }),
+    create: (jobId: string, message: string) => apiFetch<ReferralRequest>({ method: "POST", url: "/referrals", data: { jobId, message } }),
+    updateStatus: (id: string, status: ReferralRequest["status"]) => apiFetch<ReferralRequest>({ method: "PATCH", url: `/referrals/${id}/status`, data: { status } }),
   },
   admin: {
-    metrics: () => apiFetch<AdminMetrics>({ method: "GET", url: "/admin/metrics" }),
+    stats: () => apiFetch<any>({ method: "GET", url: "/admin/stats" }),
+  },
+  stories: {
+    list: () => apiFetch<any[]>({ method: "GET", url: "/stories" }),
+    create: (data: any) => apiFetch<any>({ method: "POST", url: "/stories", data }),
+    updateStatus: (id: string, isApproved: boolean) => apiFetch<any>({ method: "PATCH", url: `/stories/${id}/approve`, data: { isApproved } }),
+  },
+  announcements: {
+    list: () => apiFetch<any[]>({ method: "GET", url: "/announcements" }),
+  },
+  matching: {
+    topAlumni: () => apiFetch<{ student: any; alumni: any[] }>({ method: "GET", url: "/matching/top-alumni" }),
+  },
+  mentorship: {
+    list: () => apiFetch<{ mentorships: any[] }>({ method: "GET", url: "/mentorship" }),
+    create: (data: { mentorId: string; area: string; message?: string }) => apiFetch<{ mentorship: any }>({ method: "POST", url: "/mentorship", data }),
+    updateStatus: (id: string, status: string) => apiFetch<{ mentorship: any }>({ method: "PATCH", url: `/mentorship/${id}/status`, data: { status } }),
+  },
+  chat: {
+    list: () => apiFetch<{ threads: any[] }>({ method: "GET", url: "/chat" }),
+    getThread: (id: string) => apiFetch<{ messages: any[] }>({ method: "GET", url: `/chat/${id}` }),
+    sendMessage: (id: string, text: string) => apiFetch<{ message: any }>({ method: "POST", url: `/chat/${id}`, data: { text } }),
+    createThread: (targetUserId: string) => apiFetch<{ thread: any }>({ method: "POST", url: "/chat", data: { targetUserId } }),
   },
 };

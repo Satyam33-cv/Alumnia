@@ -11,8 +11,8 @@ type Tab = "Org" | "API Keys" | "Team" | "Usage" | "Billing" | "Webhooks";
 const tabs: Tab[] = ["Org", "API Keys", "Team", "Usage", "Billing", "Webhooks"];
 
 const apiKeys = [
-  { name: "Production Key", key: "sk_live_", created: "Aug 10, 2026", lastUsed: "2 hours ago" },
-  { name: "Development Key", key: "sk_test_", created: "Aug 15, 2026", lastUsed: "5 minutes ago" },
+  { name: "Production Key", id: "prod_1", created: "Aug 10, 2026", lastUsed: "2 hours ago" },
+  { name: "Development Key", id: "dev_1", created: "Aug 15, 2026", lastUsed: "5 minutes ago" },
 ];
 
 function SecretBar({ value, label }: { value: string; label?: string }) {
@@ -25,7 +25,9 @@ function SecretBar({ value, label }: { value: string; label?: string }) {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const masked = `${value.substring(0, 7)}••••••••••••••••••••${value.slice(-4)}`;
+  const isIdentifier = value.startsWith("prod_") || value.startsWith("dev_");
+  const displayValue = isIdentifier ? value : `${value.substring(0, 7)}••••••••••••••••••••${value.slice(-4)}`;
+  const masked = isIdentifier ? value : `${value.substring(0, 7)}••••••••••••••••••••${value.slice(-4)}`;
 
   return (
     <div className="p-3 rounded-xl border flex items-center justify-between font-mono text-sm bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 gap-3">
@@ -33,12 +35,16 @@ function SecretBar({ value, label }: { value: string; label?: string }) {
         {show ? value : masked}
       </span>
       <div className="flex items-center gap-2 shrink-0">
-        <button onClick={handleCopy} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors text-slate-500" title="Copy">
-          {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-        </button>
-        <button onClick={() => setShow(!show)} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors text-slate-500" title={show ? "Hide" : "Show"}>
-          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-        </button>
+        {!isIdentifier && (
+          <button onClick={handleCopy} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors text-slate-500" title="Copy">
+            {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+          </button>
+        )}
+        {!isIdentifier && (
+          <button onClick={() => setShow(!show)} className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors text-slate-500" title={show ? "Hide" : "Show"}>
+            {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        )}
         {label && (
           <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-1 rounded-md ml-2 border border-emerald-200 dark:border-emerald-800">
             {label}
@@ -55,10 +61,38 @@ function OrgTab() {
   const [twoFA, setTwoFA] = useState(true);
   const [sso, setSSO] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgName, domain, twoFA, sso }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      // Error handling could be added here
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSecurityChange(setter: (v: boolean) => void, newValue: boolean) {
+    setter(newValue);
+    try {
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orgName, domain, twoFA, sso }),
+      });
+    } catch {
+      // Revert on failure
+      setter(!newValue);
+    }
   }
 
   return (
@@ -87,10 +121,10 @@ function OrgTab() {
         </div>
         <button
           onClick={handleSave}
-          className="inline-flex items-center gap-2 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity"
+          disabled={saving}
+          className="inline-flex items-center gap-2 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
         >
-          {saved ? <Check className="w-3.5 h-3.5" /> : null}
-          {saved ? "Saved" : "Save Changes"}
+          {saved ? <Check className="w-3.5 h-3.5" /> : saving ? "Saving..." : "Save Changes"}
         </button>
       </div>
       <div className="p-6 rounded-2xl border space-y-4 bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 shadow-sm">
@@ -105,7 +139,7 @@ function OrgTab() {
               type="button"
               role="switch"
               aria-checked={item.on}
-              onClick={() => item.set(!item.on)}
+              onClick={() => handleSecurityChange(item.set, !item.on)}
               className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-left"
             >
               <div>
