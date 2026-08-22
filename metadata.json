@@ -1,6 +1,6 @@
 {
   "name": "Alumnia",
-  "description": "AI-powered alumni career network connecting students and alumni for referrals, mentorship, jobs, events, and career growth.",
+  "description": "AI-powered alumni career network connecting students and alumni with integrated Google Workspace tools including Google Docs and Google Keep global search, referrals, mentorship, and career growth.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

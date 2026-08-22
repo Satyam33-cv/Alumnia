@@ -22,6 +22,7 @@ import {
   Target,
   TrendingUp,
   Award,
+  Pin,
 } from "lucide-react";
 import { useAuth } from "@/lib/context/AuthContext";
 import { apiClient } from "@/lib/api/client";
@@ -30,6 +31,7 @@ import {
   staggerContainer,
 } from "@/lib/motion";
 import { Card } from "@/components/ui";
+import { AnnouncementBody } from "@/components/AnnouncementBody";
 
 type QuickAction = {
   label: string;
@@ -457,11 +459,21 @@ export const HomeContent = memo(function HomeContent() {
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              {announcements.slice(0, 2).map((ann) => (
+              {[...announcements]
+                .sort((a, b) => {
+                  if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+                  return 0;
+                })
+                .slice(0, 2)
+                .map((ann) => (
                 <ScrollReveal key={ann.id} delay={0.05} direction="up">
                   <Card
                     padding="md"
-                    className="group relative overflow-hidden border-border hover:border-purple/30 hover:shadow-cardHover transition-all duration-300"
+                    className={`group relative overflow-hidden transition-all duration-300 ${
+                      ann.pinned
+                        ? "border-purple/40 ring-1 ring-purple/20 bg-linear-to-br from-purple/5 to-transparent hover:border-purple hover:shadow-cardHover"
+                        : "border-border hover:border-purple/30 hover:shadow-cardHover"
+                    }`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-start gap-3">
@@ -469,10 +481,20 @@ export const HomeContent = memo(function HomeContent() {
                         <Megaphone size={14} />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-heading text-lg">{ann.title}</h3>
-                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-ink/55">
-                          {ann.content || ann.body}
-                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-heading text-lg">{ann.title}</h3>
+                          {ann.pinned && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400 shrink-0">
+                              <Pin size={10} className="fill-amber-500 rotate-45" />
+                              Pinned
+                            </span>
+                          )}
+                        </div>
+                        <AnnouncementBody
+                          content={ann.content || ann.body}
+                          truncate
+                          className="mt-2 text-xs"
+                        />
                         <div className="mt-3 flex items-center gap-2">
                           <span className="text-[11px] font-medium text-ink/70">
                             {ann.author?.name || ann.author}

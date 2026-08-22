@@ -24,9 +24,16 @@ import {
   BookOpen,
   X,
   Check,
+  Mail,
+  FileQuestion,
+  Megaphone,
+  FileText,
+  Calendar,
+  StickyNote,
 } from "lucide-react";
 import { useAuth } from "@/lib/context/AuthContext";
 import type { UserRole } from "@/lib/context/AuthContext";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 type Role = UserRole;
 
@@ -39,20 +46,23 @@ type NavItem = {
 const primaryNav: Record<Role, NavItem[]> = {
   student: [
     { label: "Home", href: "/home", icon: LayoutDashboard },
+    { label: "Announcements", href: "/announcements", icon: Megaphone },
     { label: "Network", href: "/network", icon: Users },
-    { label: "Events", href: "/events", icon: CalendarDays },
+    { label: "Calendar", href: "/calendar", icon: Calendar },
     { label: "Jobs", href: "/jobs", icon: BriefcaseBusiness },
     { label: "Chat", href: "/chat", icon: MessageCircle },
   ],
   alumni: [
     { label: "Home", href: "/home", icon: LayoutDashboard },
+    { label: "Announcements", href: "/announcements", icon: Megaphone },
     { label: "Network", href: "/network", icon: Users },
-    { label: "Events", href: "/events", icon: CalendarDays },
+    { label: "Calendar", href: "/calendar", icon: Calendar },
     { label: "Jobs", href: "/jobs", icon: BriefcaseBusiness },
     { label: "Chat", href: "/chat", icon: MessageCircle },
   ],
   admin: [
     { label: "Command center", href: "/admin", icon: ShieldCheck },
+    { label: "Announcements", href: "/announcements", icon: Megaphone },
     { label: "Directory", href: "/network", icon: Users },
     { label: "Analytics", href: "/admin/analytics", icon: LayoutDashboard },
     { label: "Settings", href: "/admin/settings", icon: Settings },
@@ -60,14 +70,19 @@ const primaryNav: Record<Role, NavItem[]> = {
   ],
   faculty: [
     { label: "Home", href: "/home", icon: LayoutDashboard },
+    { label: "Announcements", href: "/announcements", icon: Megaphone },
     { label: "Network", href: "/network", icon: Users },
-    { label: "Events", href: "/events", icon: CalendarDays },
+    { label: "Calendar", href: "/calendar", icon: Calendar },
     { label: "Jobs", href: "/jobs", icon: BriefcaseBusiness },
     { label: "Chat", href: "/chat", icon: MessageCircle },
   ],
 };
 
 const secondaryNav: NavItem[] = [
+  { label: "Google Docs", href: "/docs", icon: FileText },
+  { label: "Google Keep", href: "/keep", icon: StickyNote },
+  { label: "Gmail", href: "/communications", icon: Mail },
+  { label: "Forms & Surveys", href: "/forms", icon: FileQuestion },
   { label: "Mentorship", href: "/mentorship", icon: GraduationCap },
   { label: "Giving", href: "/giving", icon: Heart },
   { label: "Stories", href: "/stories", icon: BookOpen },
@@ -555,15 +570,7 @@ export function RoleShell({
           {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
         </button>
 
-        <div className="flex flex-1 items-center gap-3">
-          <Search size={18} className="shrink-0 text-slate-400" />
-          <input
-            type="search"
-            placeholder="Search people, roles, or companies"
-            className="w-full bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none"
-            aria-label="Search"
-          />
-        </div>
+        <GlobalSearch />
 
         <div className="flex items-center gap-2">
           <RoleSwitcher currentRole={role} />
