@@ -107,6 +107,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initialUser = loadSessionUser();
     setUserState(initialUser);
 
+    // Restore Google Access Token if available
+    if (typeof window !== "undefined") {
+      const storedToken = sessionStorage.getItem("google_access_token");
+      if (storedToken) {
+        setGoogleAccessToken(storedToken);
+      }
+    }
+
     // Listen to Firebase Auth state
     const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
       if (fbUser) {
@@ -165,8 +173,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const result = await signInWithPopup(auth, googleAuthProvider);
       const credential = GoogleAuthProvider.credentialFromResult(result);
       if (credential?.accessToken) {
-        // Store access token in memory
+        // Store access token in memory and session storage to survive page reloads
         setGoogleAccessToken(credential.accessToken);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("google_access_token", credential.accessToken);
+        }
       }
       const fbUser = result.user;
       const name = fbUser.displayName || fbUser.email?.split("@")[0] || "User";
@@ -237,6 +248,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     setUserState(null);
+    setGoogleAccessToken(null);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("google_access_token");
+    }
     setGoogleAccessToken(null);
     clearSession();
     try {
