@@ -133,8 +133,6 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="grid grid-cols-2 gap-3">
               <div>

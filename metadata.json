@@ -1,0 +1,8 @@
+{
+  "name": "Alumnia",
+  "description": "AI-powered alumni career network connecting students and alumni for referrals, mentorship, jobs, events, and career growth.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

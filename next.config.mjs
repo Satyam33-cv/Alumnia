@@ -1,11 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    typedRoutes: false,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  output: "standalone",
   typescript: {
     ignoreBuildErrors: true,
   },
