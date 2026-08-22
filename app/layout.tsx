@@ -35,25 +35,25 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://alumniconnect.io"),
+  metadataBase: new URL("https://proalumn.io"),
   title: {
-    default: "Alumnia | AI-Powered Alumni Network",
-    template: "%s | Alumnia",
+    default: "PRO ALUMN | AI-Powered Alumni Network",
+    template: "%s | PRO ALUMN",
   },
   description: "AI-powered alumni career network. 384-dimensional matching connects you with verified alumni for referrals, mentorship, and career growth.",
   keywords: ["alumni", "networking", "mentorship", "career", "referrals", "AI matching"],
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://alumniconnect.io",
-    siteName: "Alumnia",
-    title: "Alumnia | AI-Powered Alumni Network",
+    url: "https://proalumn.io",
+    siteName: "PRO ALUMN",
+    title: "PRO ALUMN | AI-Powered Alumni Network",
     description: "AI-powered alumni career network with 384-dimensional matching.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Alumnia" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "PRO ALUMN" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Alumnia | AI-Powered Alumni Network",
+    title: "PRO ALUMN | AI-Powered Alumni Network",
     description: "AI-powered alumni career network with 384-dimensional matching.",
     images: ["/og-image.png"],
   },

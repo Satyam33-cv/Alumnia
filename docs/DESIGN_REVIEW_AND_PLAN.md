@@ -1,4 +1,4 @@
-﻿# AlumniConnect — Phase 0: Repository Audit, Design Review & Implementation Plan
+﻿# PRO ALUMN — Phase 0: Repository Audit, Design Review & Implementation Plan
 
 > Companion document to the project''s existing files. Updated each phase; do not delete prior phases.
 

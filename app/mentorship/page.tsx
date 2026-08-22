@@ -3,15 +3,15 @@ import { MentorshipContent } from "@/components/MentorshipContent";
 import { RoleShell } from "@/components/RoleShell";
 
 export const metadata: Metadata = {
-  title: "Mentorship | AlumniConnect",
+  title: "Mentorship | PRO ALUMN",
   description: "Connect with alumni mentors and manage mentorship requests",
   openGraph: {
-    title: "Mentorship - AlumniConnect",
+    title: "Mentorship - PRO ALUMN",
     description: "Connect with alumni mentors and manage mentorship requests",
     images: ["https://alumni-connect.example.com/og-mentorship.png"],
   },
   twitter: {
-    title: "Mentorship - AlumniConnect",
+    title: "Mentorship - PRO ALUMN",
     description: "Connect with alumni mentors and manage mentorship requests",
     card: "summary_large_image",
   },

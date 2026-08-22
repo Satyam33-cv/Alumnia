@@ -138,7 +138,7 @@ export const notifications: Notification[] = [
   { id: "not-1", title: "Mentorship Request Accepted", body: "Priya Raman accepted your mentorship request", time: "2m ago", read: false, type: "mentorship" },
   { id: "not-2", title: "New Event", body: "Fall Reunion Networking Night — Oct 10", time: "1h ago", read: false, type: "event" },
   { id: "not-3", title: "Referral Update", body: "Your referral request for Northstar Labs was viewed", time: "3h ago", read: true, type: "referral" },
-  { id: "not-4", title: "Welcome!", body: "Welcome to AlumniConnect v0.1", time: "1d ago", read: true, type: "system" },
+  { id: "not-4", title: "Welcome!", body: "Welcome to PRO ALUMN v0.1", time: "1d ago", read: true, type: "system" },
   { id: "not-5", title: "New Connection", body: "Nina Okafor endorsed you for TypeScript", time: "5h ago", read: false, type: "mentorship" },
 ];
 

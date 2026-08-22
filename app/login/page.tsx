@@ -49,7 +49,7 @@ export default function LoginPage() {
             <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-500/20">
               <Sparkles className="w-5 h-5" />
             </div>
-            <span className="font-bold text-xl tracking-tight">Alumnia</span>
+            <span className="font-bold text-xl tracking-tight">PRO ALUMN</span>
           </Link>
 
           {/* Header */}
@@ -59,7 +59,7 @@ export default function LoginPage() {
           </div>
 
           <div className="pt-2">
-            <a href="http://localhost:4000/api/auth/google" className="w-full flex items-center justify-center gap-2 py-3 border rounded-xl text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 transition-colors">
+            <a href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/auth/google`} className="w-full flex items-center justify-center gap-2 py-3 border rounded-xl text-sm font-semibold hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 transition-colors">
               <svg viewBox="0 0 24 24" className="w-5 h-5">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -89,7 +89,7 @@ export default function LoginPage() {
                   id="login-email"
                   type="email"
                   autoComplete="email"
-                  placeholder="admin@alumnia.io"
+                  placeholder="admin@pro-alumn.io"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500 ${
@@ -137,7 +137,7 @@ export default function LoginPage() {
         <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] rounded-full bg-white/10 blur-[100px]" />
         <div className="relative z-10 max-w-md space-y-8">
           <blockquote className="text-xl font-medium leading-relaxed">
-            &ldquo;Alumnia bridged the gap between our graduating batch and alumni at top tech firms, making warm referrals structured and transparent.&rdquo;
+            &ldquo;PRO ALUMN bridged the gap between our graduating batch and alumni at top tech firms, making warm referrals structured and transparent.&rdquo;
           </blockquote>
           <p className="text-xs text-indigo-200">— University Career &amp; Placement Cell</p>
           <div className="space-y-4">

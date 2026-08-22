@@ -85,7 +85,7 @@ const mockNotifications = [
   { id: 2, text: "New event: Fall Reunion Networking Night", time: "1h ago", unread: true },
   { id: 3, text: "David Park endorsed you for Python", time: "3h ago", unread: false },
   { id: 4, text: "Your referral request was viewed", time: "5h ago", unread: false },
-  { id: 5, text: "Welcome to Alumnia", time: "1d ago", unread: false },
+  { id: 5, text: "Welcome to PRO ALUMN", time: "1d ago", unread: false },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -305,7 +305,7 @@ export function RoleShell({
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("alumnia_sidebar_collapsed");
+      const saved = localStorage.getItem("pro-alumn_sidebar_collapsed");
       if (saved === "1") setCollapsed(true);
     } catch {
       /* ignore */
@@ -316,7 +316,7 @@ export function RoleShell({
   useEffect(() => {
     if (!collapsedHydrated) return;
     try {
-      localStorage.setItem("alumnia_sidebar_collapsed", collapsed ? "1" : "0");
+      localStorage.setItem("pro-alumn_sidebar_collapsed", collapsed ? "1" : "0");
     } catch {
       /* ignore */
     }
@@ -361,7 +361,7 @@ export function RoleShell({
         {compact ? (
           <Link
             href="/home"
-            aria-label="Alumnia home"
+            aria-label="PRO ALUMN home"
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-heading text-lg font-extrabold tracking-tight text-white shadow-sm"
           >
             A
@@ -369,7 +369,7 @@ export function RoleShell({
         ) : (
           <>
             <Link href="/home" className="font-heading text-2xl tracking-tight text-slate-900">
-              alumni<span className="text-blue-600">connect</span>
+              PRO <span className="text-blue-600">ALUMN</span>
             </Link>
               {mobile && (
                 <button
@@ -479,7 +479,7 @@ export function RoleShell({
         </button>
         {!compact && (
           <p className="px-3 text-[11px] font-medium text-slate-400">
-            Alumnia v1.0
+            PRO ALUMN v1.0
           </p>
         )}
       </div>

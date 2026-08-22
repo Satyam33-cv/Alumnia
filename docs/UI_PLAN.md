@@ -1,8 +1,8 @@
-# AlumniConnect UI Plan
+# PRO ALUMN UI Plan
 
 ## Product direction
 
-AlumniConnect is a web-based alumni network, not a mobile app port. The product should feel editorial, warm, and useful for repeated professional workflows: finding people, scanning opportunities, and continuing referral conversations.
+PRO ALUMN is a web-based alumni network, not a mobile app port. The product should feel editorial, warm, and useful for repeated professional workflows: finding people, scanning opportunities, and continuing referral conversations.
 
 The existing Fraunces, Inter, and IBM Plex Mono system with paper, ink, brass, sage, and clay tokens remains the visual foundation. It gives the product a recognizable academic character and supports clear status communication without relying on a generic SaaS dashboard palette.
 

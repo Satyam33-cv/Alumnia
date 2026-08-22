@@ -22,10 +22,10 @@ export function NavigationBarSection() {
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo focus-visible:ring-offset-2 rounded-lg">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo text-white font-outfit font-bold text-sm">
-            A
+            P
           </div>
           <span className="font-outfit text-xl font-bold text-slate-900 tracking-tight">
-            Alumnia
+            PRO ALUMN
           </span>
         </Link>
 

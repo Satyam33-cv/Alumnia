@@ -3,7 +3,7 @@ import { DirectoryContent } from "@/components/DirectoryContent";
 import { RoleShell } from "@/components/RoleShell";
 
 export const metadata: Metadata = {
-  title: "Directory | AlumniConnect",
+  title: "Directory | PRO ALUMN",
   description: "Find alumni by experience, company, role, and location",
   openGraph: {
     title: "Alumni Directory - Find Your People",

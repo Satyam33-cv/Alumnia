@@ -22,14 +22,16 @@ export default function AuthCallbackPage() {
     const fetchSession = async () => {
       try {
         // Temporarily set the token in localStorage so apiClient can use it
-        localStorage.setItem("alumnia_token", token);
-        const user = await apiClient.auth.me();
+        localStorage.setItem("pro-alumn_token", token);
+        const res = await apiClient.auth.me();
+        // The /auth/me endpoint returns { user: {...} } — unwrap it
+        const user = (res as unknown as { user?: typeof res })?.user ?? res;
         
         setSession({ user, token });
         router.push("/home");
       } catch (err) {
         console.error("Auth callback error:", err);
-        localStorage.removeItem("alumnia_token");
+        localStorage.removeItem("pro-alumn_token");
         router.push("/login?error=auth_failed");
       }
     };

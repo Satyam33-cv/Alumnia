@@ -29,7 +29,7 @@ const testimonials = [
     name: "Sarah Chen",
     role: "Software Engineer at Meta",
     batch: "2020",
-    text: "AlumniConnect helped me land my dream job through a referral from a senior I never knew existed.",
+    text: "PRO ALUMN helped me land my dream job through a referral from a senior I never knew existed.",
     initials: "SC",
   },
   {
@@ -88,7 +88,7 @@ export function LoginPage() {
                 A
               </div>
               <span className="font-heading text-2xl font-bold text-[#0F172A]">
-                Alumnia
+                PRO ALUMN
               </span>
             </Link>
           </motion.div>
@@ -234,7 +234,7 @@ export function LoginPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="bg-white px-4 text-[#0F172A]/40">
-                  New to Alumnia?
+                  New to PRO ALUMN?
                 </span>
               </div>
             </div>

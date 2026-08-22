@@ -1,4 +1,4 @@
-# Alumnia — Idea Documentation
+# PRO ALUMN — Idea Documentation
 
 > **Centralized alumni engagement and career referral platform for colleges**  
 > **Format:** Web + mobile application, powered by a shared API and an AI-assisted alumni matching engine.
@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-Alumnia is a single digital platform that helps a college turn its alumni network into a visible, accessible and measurable career-support system. Students can find relevant alumni and job opportunities, request referrals with their resume and a personal note, and track the outcome of every request. Alumni can post jobs, respond to requests, share success stories and participate in events. Faculty and administrators can verify alumni, import alumni records in bulk, publish announcements, review stories and monitor outcomes from one dashboard.
+PRO ALUMN is a single digital platform that helps a college turn its alumni network into a visible, accessible and measurable career-support system. Students can find relevant alumni and job opportunities, request referrals with their resume and a personal note, and track the outcome of every request. Alumni can post jobs, respond to requests, share success stories and participate in events. Faculty and administrators can verify alumni, import alumni records in bulk, publish announcements, review stories and monitor outcomes from one dashboard.
 
 The solution replaces disconnected WhatsApp groups, emails, spreadsheets and informal personal networks with one trustworthy workflow. Its key differentiator is **AI Smart Matching**: it recommends the five alumni whose profiles are most relevant to a student's skills, interests and career goals. This gives students who do not already have personal connections a fairer starting point.
 
@@ -56,7 +56,7 @@ flowchart TD
 
 ## 3. Proposed Solution
 
-Alumnia is a role-based platform with four connected experience areas:
+PRO ALUMN is a role-based platform with four connected experience areas:
 
 1. **Career access for students** — browse jobs, search alumni by batch, department, company or location, receive personalized recommendations, submit referral requests and monitor every status change.
 2. **A simple contribution channel for alumni** — post opportunities, act on referral requests, share success stories and create or attend events from web or mobile.
@@ -74,7 +74,7 @@ flowchart TB
       AD[Administrators]
     end
 
-    subgraph Alumnia
+    subgraph PRO ALUMN
       CA[Career access<br/>jobs · directory · matching]
       RE[Referral engine<br/>resume · note · status tracking]
       EN[Engagement hub<br/>stories · events · announcements]
@@ -109,7 +109,7 @@ flowchart TB
 
 ## 4. How the Solution Addresses the Problem
 
-| Problem | Alumnia response | Expected operational change |
+| Problem | PRO ALUMN response | Expected operational change |
 |---|---|---|
 | Alumni network is under-used | Directory search, job board, events and a personalized “Top 5 Alumni for You” list make opportunities discoverable. | More students can identify relevant alumni without relying on introductions. |
 | Referral requests are scattered and untracked | A dedicated request record carries the job, resume, note, current state and timestamped updates. | Requests have an owner, a visible history and a measurable outcome. |
@@ -262,7 +262,7 @@ The working prototype is verified incrementally rather than waiting until the en
 - Mobile bundle generation using `npx expo export --platform android`.
 - Authentication smoke tests that confirm protected endpoints return `401` without a valid token.
 - Seeded accounts for administrator, alumni and student demonstration flows.
-- A user-facing visual test guide in `docs/Alumnia-Conclusion-TestGuide.pdf`.
+- A user-facing visual test guide in `docs/PRO ALUMN-Conclusion-TestGuide.pdf`.
 
 ### 7.3 Suggested demonstration flow
 
@@ -378,7 +378,7 @@ This documentation is grounded in the current project artefacts, especially:
 
 ### 10.2 Research basis
 
-| Topic | Reference | Relevance to Alumnia |
+| Topic | Reference | Relevance to PRO ALUMN |
 |---|---|---|
 | Referral-based hiring | [NBER Working Paper 25920](https://www.nber.org/papers/w25920) | Provides research context for employee referral programs, including candidate quality, turnover and recruiting-cost considerations. These findings motivate measuring outcomes locally rather than promising a guaranteed hiring result. |
 | Referral information and productivity | [NBER Working Paper 21357](https://www.nber.org/papers/w21357) | Explores how referrals can convey useful information in hiring, supporting a structured referral workflow. |
@@ -407,6 +407,6 @@ This documentation is grounded in the current project artefacts, especially:
 
 ## 11. Conclusion
 
-Alumnia is not only an alumni directory. It is a complete engagement and career-support workflow: it makes the network visible, helps students identify relevant alumni, turns informal requests into trackable records, and gives the institution the information needed to improve outcomes. Its hybrid matching design, shared web/mobile backend and graceful handling of optional services make it practical for a college pilot while leaving a clear path to a secure production rollout.
+PRO ALUMN is not only an alumni directory. It is a complete engagement and career-support workflow: it makes the network visible, helps students identify relevant alumni, turns informal requests into trackable records, and gives the institution the information needed to improve outcomes. Its hybrid matching design, shared web/mobile backend and graceful handling of optional services make it practical for a college pilot while leaving a clear path to a secure production rollout.
 
 The recommended next step is a controlled pilot with one department or graduating batch. Establish the baseline KPIs, onboard and verify alumni, gather feedback on matching relevance and referral response times, then expand based on measured results.

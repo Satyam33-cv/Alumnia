@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
   Pencil,
@@ -75,12 +75,176 @@ const DEFAULT_SKILLS = [
   "CI/CD",
 ];
 
+function EditProfileModal({
+  user,
+  onClose,
+  onSave,
+}: {
+  user: any;
+  onClose: () => void;
+  onSave: (data: any) => Promise<void>;
+}) {
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    department: user?.department || "",
+    batchYear: user?.batchYear || user?.classYear || "",
+    jobTitle: user?.jobTitle || "",
+    currentCompany: user?.currentCompany || "",
+    location: user?.location || "",
+    linkedinUrl: user?.linkedinUrl || "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await onSave({
+        ...formData,
+        batchYear: formData.batchYear ? parseInt(formData.batchYear) : undefined,
+      });
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 pt-10 sm:pt-20 px-4 pb-20"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg rounded-xl bg-white shadow-xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between border-b border-ink/10 px-6 py-4 bg-paper/30">
+          <h2 className="font-display text-xl text-ink">Edit Profile</h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-ink/40 transition-colors hover:text-ink"
+            type="button"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Name</span>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">LinkedIn URL</span>
+              <input
+                type="url"
+                value={formData.linkedinUrl}
+                onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
+                className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+              />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Department</span>
+              <input
+                type="text"
+                required
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Class Year</span>
+              <input
+                type="number"
+                required
+                value={formData.batchYear}
+                onChange={(e) => setFormData({ ...formData, batchYear: e.target.value })}
+                className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+              />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Job Title</span>
+              <input
+                type="text"
+                value={formData.jobTitle}
+                onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Company</span>
+              <input
+                type="text"
+                value={formData.currentCompany}
+                onChange={(e) => setFormData({ ...formData, currentCompany: e.target.value })}
+                className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+              />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Location</span>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+            />
+          </label>
+
+          <div className="mt-6 flex justify-end gap-3 border-t border-ink/10 pt-5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-ink/20 px-5 py-2 text-sm font-semibold text-ink/70 transition-colors hover:border-ink/40"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink transition-colors hover:bg-secondaryContainer disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function ProfileContent() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, setUser, setSession } = useAuth();
   const router = useRouter();
+  const { data: fullProfile, mutate: mutateProfile } = useApi("profile:me", () => apiClient.auth.me());
   const [mentoring, setMentoring] = useState(true);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [bio, setBio] = useState(
-    "Passionate about building products that make everyday work more human. Open to mentoring students and early-career professionals."
+    fullProfile?.bio || "Passionate about building products that make everyday work more human. Open to mentoring students and early-career professionals."
   );
   const [editingBio, setEditingBio] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -90,6 +254,14 @@ export function ProfileContent() {
   const [dragOver, setDragOver] = useState(false);
   const [skills, setSkills] = useState<string[]>(DEFAULT_SKILLS);
   const [newSkill, setNewSkill] = useState("");
+  const newSkillInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (fullProfile) {
+      if (fullProfile.bio) setBio(fullProfile.bio);
+      if (fullProfile.skills) setSkills(fullProfile.skills.split(",").map((s: string) => s.trim()).filter(Boolean));
+    }
+  }, [fullProfile]);
   const [toast, setToast] = useState<string | null>(null);
   const [uploadingResume, setUploadingResume] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -99,14 +271,19 @@ export function ProfileContent() {
     setTimeout(() => setToast(null), 2500);
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true);
     setRefreshDone(false);
-    setTimeout(() => {
-      setRefreshing(false);
+    try {
+      await apiClient.matching.syncMe();
       setRefreshDone(true);
       showToast("AI match profile refreshed!");
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to refresh profile");
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const handleSignOut = () => {
@@ -114,6 +291,16 @@ export function ProfileContent() {
       signOut();
       router.push("/login");
     }
+  };
+
+  const handleSaveProfile = async (data: any) => {
+    await apiClient.users.updateProfile(data);
+    await mutateProfile();
+    const updatedUser = await apiClient.auth.me();
+    // Rebuild session by grabbing local token if necessary, or just rely on context
+    const token = localStorage.getItem("auth-token") || "";
+    setSession({ user: updatedUser, token });
+    showToast("Profile updated successfully!");
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -169,19 +356,23 @@ export function ProfileContent() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const addSkill = () => {
+  const addSkill = async () => {
     const trimmed = newSkill.trim();
     if (!trimmed) return;
     if (skills.includes(trimmed)) {
       showToast("Skill already exists");
       return;
     }
-    setSkills([...skills, trimmed]);
+    const updatedSkills = [...skills, trimmed];
+    setSkills(updatedSkills);
     setNewSkill("");
+    await handleSaveProfile({ skills: updatedSkills.join(",") });
   };
 
-  const removeSkill = (skill: string) => {
-    setSkills(skills.filter((s) => s !== skill));
+  const removeSkill = async (skill: string) => {
+    const updatedSkills = skills.filter((s) => s !== skill);
+    setSkills(updatedSkills);
+    await handleSaveProfile({ skills: updatedSkills.join(",") });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -208,7 +399,7 @@ export function ProfileContent() {
           {user.name}
         </h1>
         <p className="mt-3 text-sm text-ink/55">
-          {user.role} · {user.department}
+          {fullProfile?.role || user.role} · {fullProfile?.department || user.department}
         </p>
       </motion.div>
 
@@ -220,19 +411,22 @@ export function ProfileContent() {
                 {user.initials}
               </div>
               <div>
-                <h2 className="font-display text-3xl">{user.name}</h2>
+                <h2 className="font-display text-3xl">{fullProfile?.name || user.name}</h2>
                 <p className="mt-1 text-sm text-ink/60">
-                  {user.role} · {user.department}
+                  {fullProfile?.jobTitle ? `${fullProfile.jobTitle} at ${fullProfile.currentCompany || 'Company'}` : `${fullProfile?.role || user.role} · ${fullProfile?.department || user.department}`}
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <Badge tone="neutral">
-                    Class of {user.classYear} · {user.department}
+                    Class of {fullProfile?.batchYear || user.classYear} · {fullProfile?.department || user.department}
                   </Badge>
                   <ShieldCheck size={16} className="text-sage" />
                 </div>
               </div>
             </div>
-            <button className="rounded-full border border-ink/15 px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-brass hover:text-brass">
+            <button 
+              onClick={() => setIsEditingProfile(true)}
+              className="rounded-full border border-ink/15 px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-brass hover:text-brass"
+            >
               <span className="flex items-center gap-2">
                 <Pencil size={14} /> Edit profile
               </span>
@@ -240,6 +434,16 @@ export function ProfileContent() {
           </div>
         </Card>
       </motion.div>
+
+      <AnimatePresence>
+        {isEditingProfile && (
+          <EditProfileModal
+            user={fullProfile || user}
+            onClose={() => setIsEditingProfile(false)}
+            onSave={handleSaveProfile}
+          />
+        )}
+      </AnimatePresence>
 
       <motion.div variants={slideUp}>
         <Card padding="lg">
@@ -253,7 +457,10 @@ export function ProfileContent() {
                 className="w-full rounded-lg border border-ink/20 bg-transparent px-4 py-3 text-sm leading-6 outline-none transition-colors focus:border-brass"
               />
               <button
-                onClick={() => setEditingBio(false)}
+                onClick={async () => {
+                  setEditingBio(false);
+                  await handleSaveProfile({ bio });
+                }}
                 className="mt-3 text-xs font-semibold text-brass hover:text-brass-600"
               >
                 Done
@@ -364,10 +571,7 @@ export function ProfileContent() {
             <h3 className="font-display text-xl">Skills & Tags</h3>
             <button
               onClick={() => {
-                const skill = prompt("Add a new skill:");
-                if (skill?.trim() && !skills.includes(skill.trim())) {
-                  setSkills([...skills, skill.trim()]);
-                }
+                newSkillInputRef.current?.focus();
               }}
               className="flex items-center gap-1.5 rounded-full border border-ink/15 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-brass hover:text-brass"
             >
@@ -393,6 +597,7 @@ export function ProfileContent() {
           </div>
           <div className="mt-4">
             <input
+              ref={newSkillInputRef}
               type="text"
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}

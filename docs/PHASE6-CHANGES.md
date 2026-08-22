@@ -1,6 +1,6 @@
 # Phase 6 — Mobile App & Deployment
 
-**Goal:** Ship Alumnia as a React Native (Expo) app and provide a
+**Goal:** Ship PRO ALUMN as a React Native (Expo) app and provide a
 production deployment playbook.
 
 ## What was built
@@ -10,7 +10,7 @@ production deployment playbook.
   `@expo/vector-icons`, `expo-status-bar`; dev deps `@babel/cli`,
   `babel-preset-expo`.
 - `app.json` — app config, API URL extra, Android package
-  `com.alumnia.app`, iOS bundle identifier.
+  `com.pro-alumn.app`, iOS bundle identifier.
 - `eas.json` — EAS Build profiles (`development` / `preview` / `production`)
   with `API_URL` injected per profile.
 - `babel.config.js`, `.env.example`, `.gitignore`, generated `assets/icon.png`.

@@ -1,4 +1,4 @@
-// Prisma schema for Alumnia Platform
+// Prisma schema for PRO ALUMN Platform
 // Database: PostgreSQL
 
 generator client {

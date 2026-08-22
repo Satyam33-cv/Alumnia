@@ -1,6 +1,6 @@
-# Deployment Guide — Alumnia
+# Deployment Guide — PRO ALUMN
 
-This guide covers taking Alumnia from local development to production:
+This guide covers taking PRO ALUMN from local development to production:
 managed PostgreSQL (Supabase), the REST API (Railway or Render), the web app
 (Vercel), and the mobile app (Expo Go → EAS Build → app stores).
 
@@ -27,7 +27,7 @@ managed PostgreSQL (Supabase), the REST API (Railway or Render), the web app
 ```
 
 **Design decision:** Supabase is used ONLY as a managed Postgres database.
-Alumnia keeps its own JWT auth, file uploads (Cloudinary), and
+PRO ALUMN keeps its own JWT auth, file uploads (Cloudinary), and
 notifications (SendGrid/Twilio). Do not adopt Supabase Auth/Storage/Realtime —
 this keeps the app portable and avoids lock-in.
 

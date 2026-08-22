@@ -3,15 +3,15 @@ import { EventListContent } from "@/components/EventListContent";
 import { RoleShell } from "@/components/RoleShell";
 
 export const metadata: Metadata = {
-  title: "Events | AlumniConnect",
+  title: "Events | PRO ALUMN",
   description: "Make time for gatherings, panels, and alumni conversations.",
   openGraph: {
-    title: "Events - AlumniConnect",
+    title: "Events - PRO ALUMN",
     description: "Make time for gatherings, panels, and alumni conversations.",
     images: ["https://alumni-connect.example.com/og-events.png"],
   },
   twitter: {
-    title: "Events - AlumniConnect",
+    title: "Events - PRO ALUMN",
     description: "Make time for gatherings, panels, and alumni conversations.",
     card: "summary_large_image",
   },

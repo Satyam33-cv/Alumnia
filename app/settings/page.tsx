@@ -56,8 +56,8 @@ function SecretBar({ value, label }: { value: string; label?: string }) {
 }
 
 function OrgTab() {
-  const [orgName, setOrgName] = useState("Alumnia Inc.");
-  const [domain, setDomain] = useState("alumnia.io");
+  const [orgName, setOrgName] = useState("PRO ALUMN Inc.");
+  const [domain, setDomain] = useState("pro-alumn.io");
   const [twoFA, setTwoFA] = useState(true);
   const [sso, setSSO] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -187,9 +187,9 @@ function ApiKeysTab() {
 
 function TeamTab() {
   const members = [
-    { name: "John Smith", email: "john@alumnia.io", role: "Admin", initials: "JS" },
-    { name: "Priya Sharma", email: "priya@alumnia.io", role: "Editor", initials: "PS" },
-    { name: "Alex Rivera", email: "alex@alumnia.io", role: "Viewer", initials: "AR" },
+    { name: "John Smith", email: "john@pro-alumn.io", role: "Admin", initials: "JS" },
+    { name: "Priya Sharma", email: "priya@pro-alumn.io", role: "Editor", initials: "PS" },
+    { name: "Alex Rivera", email: "alex@pro-alumn.io", role: "Viewer", initials: "AR" },
   ];
   return (
     <div className="p-6 rounded-2xl border bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 shadow-sm">

@@ -1,6 +1,6 @@
-# Alumnia
+# PRO ALUMN
 
-Alumnia (formerly AlumniConnect) is a centralized digital platform that bridges the gap between educational institutions and their alumni network. It unifies fragmented alumni data into a single, smart, searchable database — helping alumni find each other, share opportunities, and stay connected.
+PRO ALUMN (formerly PRO ALUMN) is a centralized digital platform that bridges the gap between educational institutions and their alumni network. It unifies fragmented alumni data into a single, smart, searchable database — helping alumni find each other, share opportunities, and stay connected.
 
 ## Features
 
@@ -62,5 +62,7 @@ The platform has been fully upgraded to a full-stack production application (Pha
 
 To run the full stack locally:
 1. Ensure `DATABASE_URL` is set in `apps/api/.env`.
-2. Run `npm install` in the root.
-3. Run `npm run dev` to start both the frontend (port 3000) and backend (port 4000) concurrently.
+2. Ensure you have your Google OAuth credentials configured in your `.env`.
+   > **Important reminder**: Make sure your Google Cloud Console has `http://localhost:4000/api/auth/google/callback` listed as an Authorized redirect URI in your OAuth 2.0 client settings, otherwise Google will reject the callback.
+3. Run `npm install` in the root.
+4. Run `npm run dev` to start both the frontend (port 3000) and backend (port 4000) concurrently. Alternatively, use Docker Compose with `docker-compose up -d`.

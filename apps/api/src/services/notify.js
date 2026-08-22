@@ -43,7 +43,7 @@ async function notify({ userId, type, title, message, link, sendEmail = false, s
   if (sendWhatsApp && user?.phone) {
     results.whatsapp = await whatsapp.sendWhatsApp({
       to: user.phone,
-      message: `🎓 Alumnia\n${title}\n${message}`,
+      message: `🎓 PRO ALUMN\n${title}\n${message}`,
     });
   }
 

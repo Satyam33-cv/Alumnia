@@ -13,4 +13,4 @@ const DEV_FALLBACK = expoHost && Platform.OS !== 'web'
 
 export const API_URL = process.env.API_URL || DEV_FALLBACK;
 
-export const APP_NAME = 'Alumnia';
+export const APP_NAME = 'PRO ALUMN';

@@ -1,6 +1,6 @@
-<![CDATA[# 🎓 Alumnia — Your Career Starts with a Connection
+<![CDATA[# 🎓 PRO ALUMN — Your Career Starts with a Connection
 
-> **Elevator Pitch:** Millions of students graduate every year, but their most valuable asset—their alumni network—is broken. Alumnia is a smart, all-in-one platform that connects students with the right alumni for mentorship and job referrals, turning a fragmented network into a powerful career engine.
+> **Elevator Pitch:** Millions of students graduate every year, but their most valuable asset—their alumni network—is broken. PRO ALUMN is a smart, all-in-one platform that connects students with the right alumni for mentorship and job referrals, turning a fragmented network into a powerful career engine.
 
 ---
 
@@ -15,9 +15,9 @@ Right now, the connection between students, universities, and alumni is complete
 
 ---
 
-## 💡 The Solution: Alumnia
+## 💡 The Solution: PRO ALUMN
 
-**Alumnia** is a centralized platform that bridges the gap between educational institutions and their alumni. 
+**PRO ALUMN** is a centralized platform that bridges the gap between educational institutions and their alumni. 
 
 Instead of searching endlessly on LinkedIn, students use our **Smart Match system** to instantly find the best alumni for their career goals. Instead of random DMs, we provide a **structured, trackable system** for job referrals and mentorship.
 
@@ -59,7 +59,7 @@ A powerful dashboard for the university. Admins can verify that users are actual
 
 ## 🥊 Why We Beat the Competition
 
-| Feature | Alumnia | LinkedIn | WhatsApp Groups | College Placement Cells |
+| Feature | PRO ALUMN | LinkedIn | WhatsApp Groups | College Placement Cells |
 |---|:---:|:---:|:---:|:---:|
 | **Smart Matchmaking** | ✅ Yes, instant matches | ❌ Manual search | ❌ None | ❌ None |
 | **Trackable Referrals** | ✅ Step-by-step tracker | ❌ DMs get lost | ❌ Messy | ❌ Manual spreadsheets |
@@ -67,13 +67,13 @@ A powerful dashboard for the university. Admins can verify that users are actual
 | **Mentorship Scheduling** | ✅ Built-in calendar | ❌ None | ❌ None | ❌ Manual coordination |
 | **College Admin Control** | ✅ Full analytics & moderation | ❌ Zero control | ❌ Zero data | ✅ Full control |
 
-**The Bottom Line:** LinkedIn is for broad professional networking. WhatsApp is for casual chat. **Alumnia is purpose-built to get students hired and keep alumni engaged with their alma mater.**
+**The Bottom Line:** LinkedIn is for broad professional networking. WhatsApp is for casual chat. **PRO ALUMN is purpose-built to get students hired and keep alumni engaged with their alma mater.**
 
 ---
 
 ## 📈 The Impact (What success looks like)
 
-By implementing Alumnia, universities can expect:
+By implementing PRO ALUMN, universities can expect:
 
 1. **A Massive Jump in Engagement:** Moving from a 5% engagement rate to 35%+ by giving alumni a modern, frictionless way to interact.
 2. **More Hires:** Streamlining the referral process to generate 500+ structured job referrals per year.
@@ -93,5 +93,5 @@ This is just the beginning. Our vision for the next 12 months includes:
 
 ---
 
-**Alumnia** — *Because your next career move shouldn't depend on who you randomly know. It should depend on having the right platform.*
+**PRO ALUMN** — *Because your next career move shouldn't depend on who you randomly know. It should depend on having the right platform.*
 ]]>

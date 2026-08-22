@@ -58,6 +58,7 @@ export const apiClient = {
   },
   matching: {
     topAlumni: () => apiFetch<{ student: unknown; alumni: unknown[] }>({ method: "GET", url: "/matching/top-alumni" }),
+    syncMe: () => apiFetch<{ message: string }>({ method: "POST", url: "/matching/sync-me" }),
   },
   mentorship: {
     list: () => apiFetch<{ mentorships: unknown[] }>({ method: "GET", url: "/mentorship" }),

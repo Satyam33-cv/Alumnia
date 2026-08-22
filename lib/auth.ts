@@ -1,9 +1,9 @@
 import type { AuthSession } from "@/lib/api/types";
 
-const STORAGE_KEY = "alumnia_session";
+const STORAGE_KEY = "pro-alumn_session";
 const OLD_SESSION_KEY = "alumni_connect_session";
 const OLD_TOKEN_KEY = "alumni_connect_token";
-const OLD_USER_KEY = "alumnia_auth_user";
+const OLD_USER_KEY = "pro-alumn_auth_user";
 
 export function saveSession(session: AuthSession) {
   if (typeof window === "undefined") return;
@@ -26,7 +26,8 @@ export function getSession(): AuthSession | null {
 }
 
 export function getToken(): string | null {
-  return getSession()?.token ?? null;
+  if (typeof window === "undefined") return null;
+  return getSession()?.token ?? localStorage.getItem("pro-alumn_token") ?? null;
 }
 
 export function clearSession() {

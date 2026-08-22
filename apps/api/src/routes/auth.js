@@ -14,10 +14,12 @@ const PUBLIC_VALID_ROLES = ['ALUMNI', 'STUDENT', 'FACULTY'];
 
 router.use(passport.initialize());
 
+const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 4000}`;
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: `${API_BASE_URL}/api/auth/google/callback`
   },
   async function(accessToken, refreshToken, profile, cb) {
     try {

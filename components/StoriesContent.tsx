@@ -39,7 +39,7 @@ export function StoriesContent() {
   const handleSubmit = () => {
     if (!title.trim() || !story.trim()) return;
     setSubmitting(true);
-    apiClient.stories.create({ title, story, company: "Alumnia", role: "Alumni" })
+    apiClient.stories.create({ title, story, company: "PRO ALUMN", role: "Alumni" })
       .then(() => {
         setSubmitting(false);
         setModalOpen(false);

@@ -1,4 +1,4 @@
-# Setup Guide — Run Alumnia Locally (Step by Step)
+# Setup Guide — Run PRO ALUMN Locally (Step by Step)
 
 This guide gets all three apps working on your machine:
 **API → Web → Mobile (Expo)**, backed by a free cloud PostgreSQL.
@@ -25,7 +25,7 @@ installed for `apps/api`, `apps/web`, `apps/mobile`.
 ## Step 1 — Create the cloud database (Supabase)
 
 1. Go to [supabase.com](https://supabase.com) → **Sign in** (GitHub/Google).
-2. **New project** → choose an org, name it `alumnia`, set a strong
+2. **New project** → choose an org, name it `pro-alumn`, set a strong
    **Database Password** (save it — you can't recover it later).
 3. Region: pick the closest (e.g. `Asia South (Mumbai)`). Click **Create
    project** and wait ~2 minutes for provisioning.

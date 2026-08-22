@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    const saved = localStorage.getItem("alumnia-theme") as Theme | null;
+    const saved = localStorage.getItem("pro-alumn-theme") as Theme | null;
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const initial = saved || (systemDark ? "dark" : "light");
     setTheme(initial);
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   function toggle() {
     setTheme((prev) => {
       const next = prev === "light" ? "dark" : "light";
-      localStorage.setItem("alumnia-theme", next);
+      localStorage.setItem("pro-alumn-theme", next);
       document.documentElement.classList.toggle("dark", next === "dark");
       return next;
     });

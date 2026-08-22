@@ -367,15 +367,15 @@ const referral = await alumni.referrals.create({
       <footer className="border-t border-navy-900/10 dark:border-ivory-100/10 py-10 px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-navy-500 dark:text-ivory-100/50">
           <div className="flex items-center gap-2.5">
-            <span className="w-7 h-7 rounded-lg bg-navy-900 dark:bg-ivory-100 flex items-center justify-center text-bronze-400 dark:text-navy-900 font-bold text-xs">A</span>
-            <span className="font-bold text-navy-900 dark:text-ivory-100">Alumnia</span>
+            <span className="w-7 h-7 rounded-lg bg-navy-900 dark:bg-ivory-100 flex items-center justify-center text-bronze-400 dark:text-navy-900 font-bold text-xs">P</span>
+            <span className="font-bold text-navy-900 dark:text-ivory-100">PRO ALUMN</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/education" className="hover:text-bronze-600 dark:hover:text-bronze-400 transition-colors">Education Center</Link>
             <Link href="/help" className="hover:text-bronze-600 dark:hover:text-bronze-400 transition-colors">Find Help</Link>
             <Link href="/admin" className="hover:text-bronze-600 dark:hover:text-bronze-400 transition-colors">Admin</Link>
           </div>
-          <p className="text-xs">© 2026 Alumnia · Built on pgvector</p>
+          <p className="text-xs">© 2026 PRO ALUMN · Built on pgvector</p>
         </div>
       </footer>
     </div>

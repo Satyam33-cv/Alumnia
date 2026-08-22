@@ -35,10 +35,10 @@ export function PreLoginNav() {
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-xl bg-primary-900 dark:bg-white flex items-center justify-center text-blue-600 dark:text-primary-900 font-bold font-outfit text-sm">
-            A
+            P
           </span>
           <span className="font-outfit font-bold text-xl tracking-tight text-primary-900 dark:text-white">
-            Alumnia
+            PRO ALUMN
           </span>
         </Link>
 

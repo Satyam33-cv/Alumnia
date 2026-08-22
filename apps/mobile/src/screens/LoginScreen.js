@@ -25,7 +25,7 @@ export default function LoginScreen({ onSwitch }) {
   return (
     <Screen>
       <View style={styles.hero}>
-        <Text style={styles.logo}>🎓 Alumnia</Text>
+        <Text style={styles.logo}>🎓 PRO ALUMN</Text>
         <Text style={styles.subtitle}>Alumni Engagement &amp; Career Referral Platform</Text>
       </View>
 

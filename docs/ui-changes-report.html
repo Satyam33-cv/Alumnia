@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Alumnia — Frontend & UI Changes Report</title>
+<title>PRO ALUMN — Frontend & UI Changes Report</title>
 <style>
   @page { size: A4; margin: 18mm 16mm; }
   * { box-sizing: border-box; }
@@ -48,11 +48,11 @@
 
 <!-- ==================== COVER ==================== -->
 <div class="cover">
-  <div class="logo">Alumnia</div>
+  <div class="logo">PRO ALUMN</div>
   <h1>Frontend &amp; UI Changes Report</h1>
   <div class="subtitle">AI-Powered Alumni Network — Complete record of design system, application shell, and all page-level UI transformations implemented to date</div>
   <div class="meta">
-    <p><b>Project:</b> SIH-Alumnia / Alumnia (Next.js 14 App Router)</p>
+    <p><b>Project:</b> SIH-PRO ALUMN / PRO ALUMN (Next.js 14 App Router)</p>
     <p><b>Scope:</b> Design tokens &middot; App shell &middot; 8 core pages &middot; Auth &middot; API connectivity &middot; Build infrastructure</p>
     <p><b>Date:</b> August 2026</p>
   </div>
@@ -82,7 +82,7 @@
 
 <!-- ==================== 1. OVERVIEW ==================== -->
 <h2>1. Project Overview &amp; Why These Changes Were Made</h2>
-<p>Alumnia is an AI-powered alumni career network. The platform connects students with verified alumni using a <b>384-dimensional vector similarity engine</b> to power referrals, mentorship, and career growth. The project is built with <b>Next.js 14 (App Router)</b> at the repository root, with a Node/Express REST API living in <code>apps/api</code> and a <b>PostgreSQL database hosted on Supabase</b>.</p>
+<p>PRO ALUMN is an AI-powered alumni career network. The platform connects students with verified alumni using a <b>384-dimensional vector similarity engine</b> to power referrals, mentorship, and career growth. The project is built with <b>Next.js 14 (App Router)</b> at the repository root, with a Node/Express REST API living in <code>apps/api</code> and a <b>PostgreSQL database hosted on Supabase</b>.</p>
 <p>During this engagement, the frontend underwent a <b>complete visual and functional overhaul</b> that can be summarized in three connected phases:</p>
 <ol>
   <li><b>Foundation</b> — A new design token system (slate-ink / warm gold / emerald), Inter typography, and global utilities were defined so every page shares one visual language.</li>
@@ -144,7 +144,7 @@
 
 <h3>3.1 Sidebar (Desktop)</h3>
 <ul>
-  <li><b>Collapsible:</b> full width <code>w-64</code> ⇄ icon-only <code>w-16</code>; state persisted in <code>localStorage</code> under <code>alumnia_sidebar_collapsed</code>.</li>
+  <li><b>Collapsible:</b> full width <code>w-64</code> ⇄ icon-only <code>w-16</code>; state persisted in <code>localStorage</code> under <code>pro-alumn_sidebar_collapsed</code>.</li>
   <li><b>Dark ink background</b> (<code>bg-ink</code>) with brass active states; primary nav items use <code>bg-brass text-canvas</code> when active, secondary (Mentorship/Giving/Stories) use <code>bg-sage text-canvas</code>.</li>
   <li><b>Role-aware navigation</b>: students/alumni/faculty see Home, Network, Events, Jobs, Chat; <b>admin</b> sees Command Center, Directory, Analytics, Settings, Chat.</li>
   <li><b>Bottom cluster</b>: profile chip (avatar initials, name, role badge), sign-out button, and a "Community" link.</li>

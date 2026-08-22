@@ -43,7 +43,7 @@
 
 ```
 SENDGRID_API_KEY=""                      # emails → console placeholders
-EMAIL_FROM="Alumnia <no-reply@...>"
+EMAIL_FROM="PRO ALUMN <no-reply@...>"
 TWILIO_ACCOUNT_SID=""                    # WhatsApp → console placeholders
 TWILIO_AUTH_TOKEN=""
 TWILIO_WHATSAPP_FROM="whatsapp:+14155552671"

@@ -1,13 +1,13 @@
-# Alumnia — 6-Slide Presentation Content
+# PRO ALUMN — 6-Slide Presentation Content
 
 **Alumni Engagement & Career Referral Platform** · AI-powered matching · Web + Mobile
-Companion visual deck: `docs/Alumnia-Presentation.html` (open in a browser to view/screenshot/print slides).
+Companion visual deck: `docs/PRO ALUMN-Presentation.html` (open in a browser to view/screenshot/print slides).
 
 ---
 
 ## SLIDE 1 — Title, Problem & Idea at a Glance
 
-**Title:** Alumnia — Connecting Alumni with Students for Careers & Mentorship
+**Title:** PRO ALUMN — Connecting Alumni with Students for Careers & Mentorship
 
 **The Problem (why this matters)**
 - College alumni networks are **under-used** — most students don't know which alumni work where.

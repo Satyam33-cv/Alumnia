@@ -25,7 +25,7 @@ const codeSnippets = [
   {
     title: "Search Alumni",
     lang: "JavaScript",
-    code: `const results = await alumnia.search({
+    code: `const results = await pro-alumn.search({
   company: "Google",
   skills: ["React", "System Design"],
   minMatchScore: 85,
@@ -36,7 +36,7 @@ console.log(\`Found \${results.length} alumni\`);`,
   {
     title: "Create a Referral",
     lang: "JavaScript",
-    code: `const referral = await alumnia.referrals.create({
+    code: `const referral = await pro-alumn.referrals.create({
   alumniId: "al_abc123",
   message: "Hi! I'd love to connect about the SWE role.",
   resumeUrl: "https://my-resume.pdf",
@@ -45,7 +45,7 @@ console.log(\`Found \${results.length} alumni\`);`,
   {
     title: "Configure Webhook",
     lang: "JavaScript",
-    code: `await alumnia.webhooks.create({
+    code: `await pro-alumn.webhooks.create({
   url: "https://my-app.com/webhook",
   events: ["referral.accepted", "referral.completed"],
   secret: process.env.WEBHOOK_SECRET,

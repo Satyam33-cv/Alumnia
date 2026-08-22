@@ -177,6 +177,10 @@ export function MentorshipContent() {
   const { data: topAlumniData } = useApi("mentorship:top-alumni", () => apiClient.matching.topAlumni());
   const topMatch = topAlumniData?.alumni?.[0];
 
+  const skillsList = typeof topMatch?.skills === 'string' 
+    ? topMatch.skills.split(',').map((s: string) => s.trim())
+    : Array.isArray(topMatch?.skills) ? topMatch.skills : [];
+
   const filteredRequests = useMemo(
     () =>
       activeArea === "All"
@@ -255,7 +259,7 @@ export function MentorshipContent() {
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              {topMatch.skills?.slice(0, 3).map((skill: string) => (
+              {skillsList.slice(0, 3).map((skill: string) => (
                 <span
                   key={skill}
                   className="rounded-full bg-paper/10 px-3 py-1 text-xs text-paper/80"
@@ -412,7 +416,7 @@ export function MentorshipContent() {
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brass/15 text-brass font-semibold text-sm overflow-hidden">
                       {topMatch?.avatarUrl ? (
-                        <Image src={topMatch.avatarUrl} alt={topMatch.name} width={40} height={40} unoptimized className="h-full w-full object-cover" />
+                        <Image src={topMatch.avatarUrl} alt={topMatch?.name || "Match"} width={40} height={40} unoptimized className="h-full w-full object-cover" />
                       ) : (topMatch?.initials || (topMatch?.name ? topMatch.name.split(" ").map((n: string) => n[0]).join("") : "?"))}
                     </div>
                     <div>

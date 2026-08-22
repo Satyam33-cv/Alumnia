@@ -60,7 +60,7 @@ router.post('/resume', authenticate, upload.single('file'), async (req, res) => 
     let url;
     if (cloudConfigured) {
       const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'alumnia/resumes',
+        folder: 'pro-alumn/resumes',
         resource_type: 'auto',
       });
       fs.unlink(req.file.path, () => {});

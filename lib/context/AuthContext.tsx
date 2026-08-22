@@ -51,11 +51,13 @@ function mapRole(apiRole?: string): UserRole {
 
 function userFromSession(session: AuthSession): AuthUser {
   const u = session.user;
+  if (!u) throw new Error("Session has no user");
   const role = mapRole(u.role);
-  const name = u.name || u.email.split("@")[0].replace(/[._]/g, " ");
+  const email = u.email ?? "";
+  const name = u.name || (email ? email.split("@")[0].replace(/[._]/g, " ") : "User");
   return {
     name,
-    email: u.email,
+    email,
     role,
     initials: getInitials(name),
     classYear: u.alumni?.graduationYear?.toString() ?? u.batchYear?.toString() ?? "2025",

@@ -18,7 +18,7 @@ export function Icon({ name, size = 22, color = colors.ink }) {
   return <MaterialIcons name={iconMap[name] || name} size={size} color={color} />;
 }
 
-export function AppHeader({ user, onProfile, onSearch, title = 'Alumnia', showSearch = true }) {
+export function AppHeader({ user, onProfile, onSearch, title = 'PRO ALUMN', showSearch = true }) {
   return (
     <View style={styles.header}>
       <Pressable onPress={onProfile} accessibilityLabel="Open profile">
