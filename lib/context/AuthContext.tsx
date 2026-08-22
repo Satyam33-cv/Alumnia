@@ -3,6 +3,15 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getSession, saveSession, clearSession } from "@/lib/auth";
 import type { AuthSession } from "@/lib/api/types";
+import {
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  type User as FirebaseUser,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db, googleAuthProvider } from "@/lib/firebase";
 
 export type UserRole = "student" | "alumni" | "admin" | "faculty";
 
@@ -13,14 +22,18 @@ export type AuthUser = {
   initials: string;
   classYear: string;
   department: string;
+  firebaseUid?: string;
+  photoURL?: string;
 };
 
 type AuthContextValue = {
   user: AuthUser | null;
   role: UserRole;
+  googleAccessToken: string | null;
   setUser: (user: AuthUser) => void;
   setSession: (session: AuthSession) => void;
   switchRole: (role: UserRole) => void;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => void;
   loading: boolean;
 };
@@ -86,11 +99,109 @@ function loadSessionUser(): AuthUser | null {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUserState] = useState<AuthUser | null>(null);
+  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUserState(loadSessionUser());
-    setLoading(false);
+    // Check initial session
+    const initialUser = loadSessionUser();
+    setUserState(initialUser);
+
+    // Listen to Firebase Auth state
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
+      if (fbUser) {
+        try {
+          const userDocRef = doc(db, "users", fbUser.uid);
+          const snap = await getDoc(userDocRef);
+          let assignedRole: UserRole = "student";
+          let dept = "Computer Science";
+          let yr = "2025";
+
+          if (snap.exists()) {
+            const d = snap.data();
+            if (d.role) assignedRole = d.role as UserRole;
+            if (d.department) dept = d.department;
+            if (d.classYear) yr = d.classYear;
+          } else {
+            // Write initial profile to Firestore
+            await setDoc(
+              userDocRef,
+              {
+                id: fbUser.uid,
+                email: fbUser.email || "",
+                name: fbUser.displayName || "Alumni Member",
+                role: "student",
+                department: dept,
+                classYear: yr,
+                createdAt: new Date().toISOString(),
+              },
+              { merge: true }
+            );
+          }
+
+          const name = fbUser.displayName || fbUser.email?.split("@")[0] || "User";
+          setUserState({
+            name,
+            email: fbUser.email || "",
+            role: assignedRole,
+            initials: getInitials(name),
+            classYear: yr,
+            department: dept,
+            firebaseUid: fbUser.uid,
+            photoURL: fbUser.photoURL || undefined,
+          });
+        } catch (e) {
+          console.warn("Firestore profile fetch error:", e);
+        }
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      const result = await signInWithPopup(auth, googleAuthProvider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (credential?.accessToken) {
+        // Store access token in memory
+        setGoogleAccessToken(credential.accessToken);
+      }
+      const fbUser = result.user;
+      const name = fbUser.displayName || fbUser.email?.split("@")[0] || "User";
+      
+      // Update or create in Firestore
+      const userDocRef = doc(db, "users", fbUser.uid);
+      const snap = await getDoc(userDocRef);
+      const role: UserRole = snap.exists() && snap.data()?.role ? snap.data().role : "student";
+      
+      if (!snap.exists()) {
+        await setDoc(userDocRef, {
+          id: fbUser.uid,
+          email: fbUser.email || "",
+          name,
+          role,
+          department: "Computer Science",
+          classYear: "2025",
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      setUserState({
+        name,
+        email: fbUser.email || "",
+        role,
+        initials: getInitials(name),
+        classYear: "2025",
+        department: "Computer Science",
+        firebaseUid: fbUser.uid,
+        photoURL: fbUser.photoURL || undefined,
+      });
+    } catch (err) {
+      console.error("Google Sign-In Error:", err);
+      throw err;
+    }
   }, []);
 
   const setUser = useCallback((next: AuthUser) => {
@@ -117,13 +228,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user: { ...session.user, role: next.toUpperCase() as AuthSession["user"]["role"] },
         });
       }
+      if (prev.firebaseUid) {
+        setDoc(doc(db, "users", prev.firebaseUid), { role: next }, { merge: true }).catch(() => {});
+      }
       return nextUser;
     });
   }, []);
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
     setUserState(null);
+    setGoogleAccessToken(null);
     clearSession();
+    try {
+      await firebaseSignOut(auth);
+    } catch {
+      // ignore
+    }
   }, []);
 
   useEffect(() => {
@@ -137,8 +257,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const role = user?.role ?? "student";
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, role, setUser, setSession, switchRole, signOut, loading }),
-    [user, role, setUser, setSession, switchRole, signOut, loading],
+    () => ({
+      user,
+      role,
+      googleAccessToken,
+      setUser,
+      setSession,
+      switchRole,
+      signInWithGoogle,
+      signOut,
+      loading,
+    }),
+    [user, role, googleAccessToken, setUser, setSession, switchRole, signInWithGoogle, signOut, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

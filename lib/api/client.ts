@@ -43,6 +43,7 @@ let inMemoryReferrals: ReferralRequest[] = [
 
 let inMemoryMentorships = [...mockMentorshipRequests];
 let inMemoryChatThreads = [...mockChatThreads];
+let inMemoryAnnouncements = [...mockAnnouncements];
 
 export const apiClient = {
   auth: {
@@ -323,12 +324,56 @@ export const apiClient = {
   announcements: {
     list: async (): Promise<unknown[]> => {
       try {
-        return await apiFetch<{ announcements: unknown[] }>({ method: "GET", url: "/announcements" }).then(
-          (res) => res.announcements
-        );
+        const res = await apiFetch<{ announcements: unknown[] }>({ method: "GET", url: "/announcements" });
+        return (res.announcements || []).sort((a: any, b: any) => {
+          if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+          return 0;
+        });
       } catch {
-        return mockAnnouncements;
+        return [...inMemoryAnnouncements].sort((a: any, b: any) => {
+          if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+          return 0;
+        });
       }
+    },
+    create: async (data: { title: string; body: string; category?: string; author?: string; role?: string; pinned?: boolean }): Promise<unknown> => {
+      const newAnn = {
+        id: `ann-${Date.now()}`,
+        title: data.title,
+        body: data.body,
+        category: data.category || "General",
+        author: data.author || "Admin Team",
+        role: data.role || "Administrator",
+        pinned: Boolean(data.pinned),
+        pinnedAt: data.pinned ? new Date().toISOString() : undefined,
+        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+      };
+      try {
+        const res = await apiFetch<{ announcement: unknown }>({
+          method: "POST",
+          url: "/announcements",
+          data,
+        });
+        inMemoryAnnouncements = [newAnn, ...inMemoryAnnouncements];
+        return res.announcement || newAnn;
+      } catch {
+        inMemoryAnnouncements = [newAnn, ...inMemoryAnnouncements];
+        return newAnn;
+      }
+    },
+    togglePin: async (id: string): Promise<boolean> => {
+      inMemoryAnnouncements = inMemoryAnnouncements.map((ann) => {
+        if (ann.id === id) {
+          const nextPinned = !ann.pinned;
+          return {
+            ...ann,
+            pinned: nextPinned,
+            pinnedAt: nextPinned ? new Date().toISOString() : undefined,
+          };
+        }
+        return ann;
+      });
+      return true;
     },
   },
   matching: {

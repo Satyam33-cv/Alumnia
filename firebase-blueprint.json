@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile data and role assignments",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "department": { "type": "string" },
+        "classYear": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "email", "name", "role", "createdAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Campus and alumni announcements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "body": { "type": "string" },
+        "pinned": { "type": "boolean" },
+        "pinnedAt": { "type": "string" },
+        "author": { "type": "string" },
+        "authorId": { "type": "string" },
+        "role": { "type": "string" },
+        "date": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "body", "author", "date"]
+    },
+    "FormItem": {
+      "title": "FormItem",
+      "description": "Google Form or campus survey reference",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "formId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "responderUri": { "type": "string" },
+        "category": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "createdAt"]
+    },
+    "EmailLog": {
+      "title": "EmailLog",
+      "description": "Alumni communications log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "to": { "type": "string" },
+        "subject": { "type": "string" },
+        "snippet": { "type": "string" },
+        "senderEmail": { "type": "string" },
+        "senderId": { "type": "string" },
+        "sentAt": { "type": "string" }
+      },
+      "required": ["id", "to", "subject", "senderEmail", "sentAt"]
+    },
+    "DocItem": {
+      "title": "DocItem",
+      "description": "Google Doc collaboration references",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "docId": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "author": { "type": "string" },
+        "authorId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "createdAt"]
+    },
+    "CalendarEventItem": {
+      "title": "CalendarEventItem",
+      "description": "Google Calendar synced alumni events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "location": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "creatorEmail": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "startTime", "endTime"]
+    },
+    "KeepNoteItem": {
+      "title": "KeepNoteItem",
+      "description": "Google Keep notes and alumni memos",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "color": { "type": "string" },
+        "pinned": { "type": "boolean" },
+        "authorId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile records"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Public campus announcements"
+    },
+    "/forms/{formId}": {
+      "schema": "FormItem",
+      "description": "Alumni feedback and surveys"
+    },
+    "/emails/{emailId}": {
+      "schema": "EmailLog",
+      "description": "Email communications sent via Gmail"
+    },
+    "/docs/{docId}": {
+      "schema": "DocItem",
+      "description": "Google Docs workspace files"
+    },
+    "/calendar_events/{eventId}": {
+      "schema": "CalendarEventItem",
+      "description": "Calendar events"
+    },
+    "/notes/{noteId}": {
+      "schema": "KeepNoteItem",
+      "description": "Keep notes and quick memos"
+    }
+  }
+}

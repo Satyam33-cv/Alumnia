@@ -1,4 +1,4 @@
-﻿export type AlumniId = string;
+export type AlumniId = string;
 
 export type Alumni = {
   id: AlumniId;
@@ -51,6 +51,9 @@ export type Announcement = {
   author: string;
   role: string;
   date: string;
+  category?: string;
+  pinned?: boolean;
+  pinnedAt?: string;
 };
 
 export type Story = {
@@ -122,9 +125,72 @@ export const events: EventItem[] = [
 ];
 
 export const announcements: Announcement[] = [
-  { id: "ann-1", title: "Fall Reunion Registration Now Open", body: "Register early for the annual alumni reunion. This year features networking sessions, career panels, and campus tours.", author: "Dr. Sarah Williams", role: "Faculty", date: "Aug 15, 2026" },
-  { id: "ann-2", title: "New Mentorship Program Launch", body: "We are launching a structured mentorship program connecting students with alumni professionals. Applications open next week.", author: "Admin Team", role: "Administrator", date: "Aug 12, 2026" },
-  { id: "ann-3", title: "Campus Library Renovation Complete", body: "The newly renovated library now includes dedicated study spaces and a career resource center for current students.", author: "Dr. James Park", role: "Faculty", date: "Aug 8, 2026" },
+  {
+    id: "ann-1",
+    title: "Fall Reunion Registration Now Open",
+    body: `We are thrilled to announce that registration for the **2026 Annual Alumni Fall Reunion** is officially open!
+
+Key Highlights for this year:
+- **Networking Mixer**: Connect with over 300+ alumni across tech, healthcare, and finance.
+- **Keynote Panels**: Industry trends and leadership insights from distinguished alumni.
+- **Campus & Lab Tours**: Explore the brand new Science & Engineering Pavilion.
+
+Please review the [Full Reunion Schedule & RSVP Details](https://alumni.university.edu/reunion) to reserve your spot before **September 25, 2026**.`,
+    author: "Dr. Sarah Williams",
+    role: "Faculty",
+    date: "Aug 15, 2026",
+    category: "Reunion",
+    pinned: true,
+  },
+  {
+    id: "ann-2",
+    title: "New 1-on-1 Mentorship Program Launch",
+    body: `We are launching the **Fall 2026 Mentorship Cohort** connecting undergraduate students with seasoned alumni professionals.
+
+### Program Timeline & Structure
+1. **Application Period**: August 18 – August 31, 2026
+2. **AI-Assisted Matching**: September 1 – September 5, 2026
+3. **Orientation & Kickoff**: September 10, 2026
+
+Interested mentors and mentees can apply directly on our [Mentorship Portal](/mentorship) or email <b>mentorship@alumni.university.edu</b> for inquiries.`,
+    author: "Admin Team",
+    role: "Administrator",
+    date: "Aug 12, 2026",
+    category: "Programs",
+  },
+  {
+    id: "ann-3",
+    title: "Campus Library & Career Resource Center Renovation Complete",
+    body: `The extensive renovation of the <strong>University Memorial Library</strong> is now complete. The updated facility features:
+
+<ul>
+  <li><b>24/7 Dedicated Study Pods</b> with high-speed fiber connectivity</li>
+  <li><b>Interview Prep Studios</b> equipped with studio lighting and 4K recording</li>
+  <li><b>Alumni Career Resource Desk</b> with on-demand resume review resources</li>
+</ul>
+
+For booking guidelines and equipment access, visit the <a href="https://library.university.edu/spaces" target="_blank" rel="noopener noreferrer">Library Spaces Portal</a>.`,
+    author: "Dr. James Park",
+    role: "Faculty",
+    date: "Aug 8, 2026",
+    category: "Campus",
+  },
+  {
+    id: "ann-4",
+    title: "Annual Alumni Giving Day & Student Grant Initiative",
+    body: `Thanks to the incredible generosity of our alumni community, this year's Giving Campaign raised over **$250,000** for student innovation grants!
+
+Top funded student projects this semester:
+- **EcoSense**: IoT environmental sensors for urban gardens
+- **MediRoute**: Open-source medical transport logistics for rural communities
+- **NeuroBridge**: Accessible assistive technology tools
+
+Read more about the student teams in our [Spotlight Stories](/stories) and discover how you can contribute on the [Giving Page](/giving).`,
+    author: "Alumni Relations Office",
+    role: "Administrator",
+    date: "Aug 1, 2026",
+    category: "Giving",
+  },
 ];
 
 export const stories: Story[] = [
