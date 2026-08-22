@@ -18,7 +18,7 @@ router.patch('/me', authenticate, async (req, res) => {
     const allowed = [
       'name', 'phone', 'avatarUrl', 'batchYear', 'department', 'rollNumber',
       'currentCompany', 'jobTitle', 'location', 'linkedinUrl', 'bio', 'resumeUrl',
-      'skills', 'interests',
+      'skills', 'interests', 'timeline',
     ];
     const data = {};
     for (const key of allowed) {
@@ -33,7 +33,7 @@ router.patch('/me', authenticate, async (req, res) => {
         id: true, name: true, email: true, role: true, phone: true, avatarUrl: true,
         batchYear: true, department: true, currentCompany: true, jobTitle: true,
         location: true, linkedinUrl: true, bio: true, resumeUrl: true,
-        skills: true, interests: true,
+        skills: true, interests: true, timeline: true,
       },
     });
     res.json({ user });

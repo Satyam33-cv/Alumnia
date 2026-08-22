@@ -26,6 +26,7 @@ import { useAuth } from "@/lib/context/AuthContext";
 import { Card, Badge } from "@/components/ui";
 import { fadeIn, slideUp, staggerContainer } from "@/lib/motion";
 import { apiClient } from "@/lib/api/client";
+import { useApi } from "@/lib/hooks/useApi";
 
 const timelineEntries = [
   {
@@ -74,6 +75,95 @@ const DEFAULT_SKILLS = [
   "Docker",
   "CI/CD",
 ];
+
+function TimelineModal({
+  onClose,
+  onSave,
+}: {
+  onClose: () => void;
+  onSave: (event: { role: string; company: string; range: string }) => Promise<void>;
+}) {
+  const [formData, setFormData] = useState({ role: "", company: "", range: "" });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await onSave(formData);
+      onClose();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 pt-10 sm:pt-20 px-4 pb-20"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl bg-white shadow-xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between border-b border-ink/10 px-6 py-4 bg-paper/30">
+          <h2 className="font-display text-xl text-ink">Add Timeline Event</h2>
+          <button onClick={onClose} className="p-1 text-ink/40 transition-colors hover:text-ink" type="button">
+            <X size={18} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Role / Title</span>
+            <input
+              type="text"
+              required
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Company / Organization</span>
+            <input
+              type="text"
+              required
+              value={formData.company}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold uppercase tracking-wider text-ink/55">Date Range</span>
+            <input
+              type="text"
+              required
+              placeholder="e.g. 2022 — Present"
+              value={formData.range}
+              onChange={(e) => setFormData({ ...formData, range: e.target.value })}
+              className="mt-1.5 w-full rounded-lg border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-brass"
+            />
+          </label>
+          <div className="mt-6 flex justify-end gap-3 border-t border-ink/10 pt-5">
+            <button type="button" onClick={onClose} className="rounded-full border border-ink/20 px-5 py-2 text-sm font-semibold text-ink/70 transition-colors hover:border-ink/40">Cancel</button>
+            <button type="submit" disabled={saving} className="rounded-full bg-brass px-6 py-2 text-sm font-semibold text-ink transition-colors hover:bg-secondaryContainer disabled:opacity-50">
+              {saving ? "Saving..." : "Add Event"}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 function EditProfileModal({
   user,
@@ -243,6 +333,7 @@ export function ProfileContent() {
   const { data: fullProfile, mutate: mutateProfile } = useApi("profile:me", () => apiClient.auth.me());
   const [mentoring, setMentoring] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isAddingTimeline, setIsAddingTimeline] = useState(false);
   const [bio, setBio] = useState(
     fullProfile?.bio || "Passionate about building products that make everyday work more human. Open to mentoring students and early-career professionals."
   );
@@ -380,6 +471,20 @@ export function ProfileContent() {
       e.preventDefault();
       addSkill();
     }
+  };
+
+  const currentTimeline = fullProfile?.timeline ? (Array.isArray(fullProfile.timeline) ? fullProfile.timeline : JSON.parse(fullProfile.timeline as string)) : timelineEntries;
+
+  const handleAddTimelineEvent = async (event: { role: string; company: string; range: string }) => {
+    const newTimeline = [event, ...currentTimeline];
+    await handleSaveProfile({ timeline: newTimeline });
+  };
+
+  const handleRemoveTimelineEvent = async (index: number) => {
+    if (!window.confirm("Remove this timeline event?")) return;
+    const newTimeline = [...currentTimeline];
+    newTimeline.splice(index, 1);
+    await handleSaveProfile({ timeline: newTimeline });
   };
 
   if (!user) return null;
@@ -611,30 +716,57 @@ export function ProfileContent() {
 
       <motion.div variants={slideUp}>
         <Card padding="lg">
-          <h3 className="font-display text-xl">Career Timeline</h3>
-          <div className="mt-6 space-y-0">
-            {timelineEntries.map((entry, i) => (
-              <div key={i} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="h-3 w-3 rounded-full bg-brass" />
-                  {i < timelineEntries.length - 1 && (
-                    <div className="w-px flex-1 bg-ink/15" />
-                  )}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-display text-xl">Career Timeline</h3>
+            <button
+              onClick={() => setIsAddingTimeline(true)}
+              className="flex items-center gap-1.5 rounded-full border border-ink/15 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-brass hover:text-brass"
+            >
+              <Plus size={12} /> Add Event
+            </button>
+          </div>
+          
+          <div className="space-y-0">
+            {currentTimeline.length === 0 ? (
+              <p className="text-sm text-ink/50 text-center py-4">No timeline events added yet.</p>
+            ) : (
+              currentTimeline.map((entry: any, i: number) => (
+                <div key={i} className="flex gap-4 group">
+                  <div className="flex flex-col items-center">
+                    <div className="h-3 w-3 rounded-full bg-brass mt-1" />
+                    {i < currentTimeline.length - 1 && (
+                      <div className="w-px flex-1 bg-ink/15 my-1" />
+                    )}
+                  </div>
+                  <div className="pb-6 flex-1 flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-semibold text-ink">{entry.role}</p>
+                      <p className="text-xs text-ink/60">{entry.company}</p>
+                      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-ink/40">{entry.range}</p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveTimelineEvent(i)}
+                      className="p-1.5 text-ink/30 opacity-0 group-hover:opacity-100 transition-all hover:text-clay hover:bg-clay/10 rounded-md"
+                      title="Remove event"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
-                <div className="pb-6">
-                  <p className="text-sm font-semibold text-ink">
-                    {entry.role}
-                  </p>
-                  <p className="text-xs text-ink/60">{entry.company}</p>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-ink/40">
-                    {entry.range}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Card>
       </motion.div>
+
+      <AnimatePresence>
+        {isAddingTimeline && (
+          <TimelineModal
+            onClose={() => setIsAddingTimeline(false)}
+            onSave={handleAddTimelineEvent}
+          />
+        )}
+      </AnimatePresence>
 
       <motion.div variants={slideUp}>
         <Card padding="lg">
